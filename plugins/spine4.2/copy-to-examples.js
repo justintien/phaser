@@ -1,7 +1,7 @@
 var fs = require('fs-extra');
 
-var source = './plugins/spine4.1/dist/';
-var dest = '../phaser3-examples/public/plugins/spine4.1/';
+var source = './plugins/spine4.2/dist/';
+var dest = '../phaser3-examples/public/plugins/spine4.2/';
 
 if (fs.existsSync(dest))
 {
