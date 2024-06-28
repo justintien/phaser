@@ -95,7 +95,9 @@ var SpineGameObjectWebGLDirect = function (renderer, src, camera, parentMatrix, 
     }
     */
 
-    skeleton.updateWorldTransform();
+    var physics = 0; // 目前未知這個應該抓哪個設置檔，暫時先固定 0. 0-none;1-reset;2-update;3-pose
+
+    skeleton.updateWorldTransform(physics);
 
     //  Draw the current skeleton
 

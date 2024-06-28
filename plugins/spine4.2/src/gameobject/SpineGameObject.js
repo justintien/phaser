@@ -785,12 +785,14 @@ var SpineGameObject = new Class({
         var oldScaleX = this.scaleX;
         var oldScaleY = this.scaleY;
 
+        var physics = 0; // 目前未知這個應該抓哪個設置檔，暫時先固定 0. 0-none;1-reset;2-update;3-pose
+
         skeleton.x = this.x;
         skeleton.y = height - this.y;
         skeleton.scaleX = 1;
         skeleton.scaleY = 1;
 
-        skeleton.updateWorldTransform();
+        skeleton.updateWorldTransform(physics);
 
         var bounds = this.getBounds();
 
@@ -803,7 +805,7 @@ var SpineGameObject = new Class({
         skeleton.scaleX = oldScaleX;
         skeleton.scaleY = oldScaleY;
 
-        skeleton.updateWorldTransform();
+        skeleton.updateWorldTransform(physics);
 
         return this;
     },
