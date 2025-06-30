@@ -4,6 +4,7 @@ var spine = (() => {
   var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
   var __getOwnPropNames = Object.getOwnPropertyNames;
   var __hasOwnProp = Object.prototype.hasOwnProperty;
+  var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
   var __export = (target, all) => {
     for (var name in all)
       __defProp(target, name, { get: all[name], enumerable: true });
@@ -17,6 +18,10 @@ var spine = (() => {
     return to;
   };
   var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+  var __publicField = (obj, key, value) => {
+    __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
+    return value;
+  };
 
   // spine-webgl/src/index.ts
   var src_exports = {};
@@ -184,9 +189,7 @@ var spine = (() => {
 
   // spine-core/src/Utils.ts
   var IntSet = class {
-    constructor() {
-      this.array = new Array();
-    }
+    array = new Array();
     add(value) {
       let contains = this.contains(value);
       this.array[value | 0] = value | 0;
@@ -203,10 +206,8 @@ var spine = (() => {
     }
   };
   var StringSet = class {
-    constructor() {
-      this.entries = {};
-      this.size = 0;
-    }
+    entries = {};
+    size = 0;
     add(value) {
       let contains = this.entries[value];
       this.entries[value] = true;
@@ -300,16 +301,16 @@ var spine = (() => {
       const hex = (x) => ("0" + (x * 255).toString(16)).slice(-2);
       return Number("0x" + hex(this.r) + hex(this.g) + hex(this.b));
     }
-    static fromString(hex) {
-      return new _Color().setFromString(hex);
+    static fromString(hex, color = new _Color()) {
+      return color.setFromString(hex);
     }
   };
   var Color = _Color;
-  Color.WHITE = new _Color(1, 1, 1, 1);
-  Color.RED = new _Color(1, 0, 0, 1);
-  Color.GREEN = new _Color(0, 1, 0, 1);
-  Color.BLUE = new _Color(0, 0, 1, 1);
-  Color.MAGENTA = new _Color(1, 0, 1, 1);
+  __publicField(Color, "WHITE", new _Color(1, 1, 1, 1));
+  __publicField(Color, "RED", new _Color(1, 0, 0, 1));
+  __publicField(Color, "GREEN", new _Color(0, 1, 0, 1));
+  __publicField(Color, "BLUE", new _Color(0, 0, 1, 1));
+  __publicField(Color, "MAGENTA", new _Color(1, 0, 1, 1));
   var _MathUtils = class {
     static clamp(value, min, max) {
       if (value < min)
@@ -352,22 +353,22 @@ var spine = (() => {
     }
   };
   var MathUtils = _MathUtils;
-  MathUtils.PI = 3.1415927;
-  MathUtils.PI2 = _MathUtils.PI * 2;
-  MathUtils.invPI2 = 1 / _MathUtils.PI2;
-  MathUtils.radiansToDegrees = 180 / _MathUtils.PI;
-  MathUtils.radDeg = _MathUtils.radiansToDegrees;
-  MathUtils.degreesToRadians = _MathUtils.PI / 180;
-  MathUtils.degRad = _MathUtils.degreesToRadians;
+  __publicField(MathUtils, "PI", 3.1415927);
+  __publicField(MathUtils, "PI2", _MathUtils.PI * 2);
+  __publicField(MathUtils, "invPI2", 1 / _MathUtils.PI2);
+  __publicField(MathUtils, "radiansToDegrees", 180 / _MathUtils.PI);
+  __publicField(MathUtils, "radDeg", _MathUtils.radiansToDegrees);
+  __publicField(MathUtils, "degreesToRadians", _MathUtils.PI / 180);
+  __publicField(MathUtils, "degRad", _MathUtils.degreesToRadians);
   var Interpolation = class {
     apply(start, end, a) {
       return start + (end - start) * this.applyInternal(a);
     }
   };
   var Pow = class extends Interpolation {
+    power = 2;
     constructor(power) {
       super();
-      this.power = 2;
       this.power = power;
     }
     applyInternal(a) {
@@ -456,7 +457,7 @@ var spine = (() => {
     }
   };
   var Utils = _Utils;
-  Utils.SUPPORTS_TYPED_ARRAYS = typeof Float32Array !== "undefined";
+  __publicField(Utils, "SUPPORTS_TYPED_ARRAYS", typeof Float32Array !== "undefined");
   var DebugUtils = class {
     static logBones(skeleton) {
       for (let i = 0; i < skeleton.bones.length; i++) {
@@ -466,8 +467,9 @@ var spine = (() => {
     }
   };
   var Pool = class {
+    items = new Array();
+    instantiator;
     constructor(instantiator) {
-      this.items = new Array();
       this.instantiator = instantiator;
     }
     obtain() {
@@ -511,15 +513,13 @@ var spine = (() => {
     }
   };
   var TimeKeeper = class {
-    constructor() {
-      this.maxDelta = 0.064;
-      this.framesPerSecond = 0;
-      this.delta = 0;
-      this.totalTime = 0;
-      this.lastTime = Date.now() / 1e3;
-      this.frameCount = 0;
-      this.frameTime = 0;
-    }
+    maxDelta = 0.064;
+    framesPerSecond = 0;
+    delta = 0;
+    totalTime = 0;
+    lastTime = Date.now() / 1e3;
+    frameCount = 0;
+    frameTime = 0;
     update() {
       let now = Date.now() / 1e3;
       this.delta = now - this.lastTime;
@@ -537,11 +537,12 @@ var spine = (() => {
     }
   };
   var WindowedMean = class {
+    values;
+    addedValues = 0;
+    lastValue = 0;
+    mean = 0;
+    dirty = true;
     constructor(windowSize = 32) {
-      this.addedValues = 0;
-      this.lastValue = 0;
-      this.mean = 0;
-      this.dirty = true;
       this.values = new Array(windowSize);
     }
     hasEnoughData() {
@@ -572,6 +573,7 @@ var spine = (() => {
 
   // spine-core/src/attachments/Attachment.ts
   var Attachment = class {
+    name;
     constructor(name) {
       if (!name)
         throw new Error("name cannot be null.");
@@ -579,24 +581,24 @@ var spine = (() => {
     }
   };
   var _VertexAttachment = class extends Attachment {
+    /** The unique ID for this attachment. */
+    id = _VertexAttachment.nextID++;
+    /** The bones which affect the {@link #getVertices()}. The array entries are, for each vertex, the number of bones affecting
+     * the vertex followed by that many bone indices, which is the index of the bone in {@link Skeleton#bones}. Will be null
+     * if this attachment has no weights. */
+    bones = null;
+    /** The vertex positions in the bone's coordinate system. For a non-weighted attachment, the values are `x,y`
+     * entries for each vertex. For a weighted attachment, the values are `x,y,weight` entries for each bone affecting
+     * each vertex. */
+    vertices = [];
+    /** The maximum number of world vertex values that can be output by
+     * {@link #computeWorldVertices()} using the `count` parameter. */
+    worldVerticesLength = 0;
+    /** Timelines for the timeline attachment are also applied to this attachment.
+     * May be null if no attachment-specific timelines should be applied. */
+    timelineAttachment = this;
     constructor(name) {
       super(name);
-      /** The unique ID for this attachment. */
-      this.id = _VertexAttachment.nextID++;
-      /** The bones which affect the {@link #getVertices()}. The array entries are, for each vertex, the number of bones affecting
-       * the vertex followed by that many bone indices, which is the index of the bone in {@link Skeleton#bones}. Will be null
-       * if this attachment has no weights. */
-      this.bones = null;
-      /** The vertex positions in the bone's coordinate system. For a non-weighted attachment, the values are `x,y`
-       * entries for each vertex. For a weighted attachment, the values are `x,y,weight` entries for each bone affecting
-       * each vertex. */
-      this.vertices = [];
-      /** The maximum number of world vertex values that can be output by
-       * {@link #computeWorldVertices()} using the `count` parameter. */
-      this.worldVerticesLength = 0;
-      /** Timelines for the timeline attachment are also applied to this attachment.
-       * May be null if no attachment-specific timelines should be applied. */
-      this.timelineAttachment = this;
     }
     /** Transforms the attachment's local {@link #vertices} to world coordinates. If the slot's {@link Slot#deform} is
      * not empty, it is used to deform the vertices.
@@ -683,16 +685,17 @@ var spine = (() => {
     }
   };
   var VertexAttachment = _VertexAttachment;
-  VertexAttachment.nextID = 0;
+  __publicField(VertexAttachment, "nextID", 0);
 
   // spine-core/src/attachments/Sequence.ts
   var _Sequence = class {
+    id = _Sequence.nextID();
+    regions;
+    start = 0;
+    digits = 0;
+    /** The index of the region to show for the setup pose. */
+    setupIndex = 0;
     constructor(count) {
-      this.id = _Sequence.nextID();
-      this.start = 0;
-      this.digits = 0;
-      /** The index of the region to show for the setup pose. */
-      this.setupIndex = 0;
       this.regions = new Array(count);
     }
     copy() {
@@ -728,7 +731,7 @@ var spine = (() => {
     }
   };
   var Sequence = _Sequence;
-  Sequence._nextID = 0;
+  __publicField(Sequence, "_nextID", 0);
   var SequenceMode = /* @__PURE__ */ ((SequenceMode2) => {
     SequenceMode2[SequenceMode2["hold"] = 0] = "hold";
     SequenceMode2[SequenceMode2["once"] = 1] = "once";
@@ -751,9 +754,13 @@ var spine = (() => {
 
   // spine-core/src/Animation.ts
   var Animation = class {
+    /** The animation's name, which is unique across all animations in the skeleton. */
+    name;
+    timelines = [];
+    timelineIds = new StringSet();
+    /** The duration of the animation in seconds, which is the highest time of all keys in the timeline. */
+    duration;
     constructor(name, timelines, duration) {
-      this.timelines = [];
-      this.timelineIds = new StringSet();
       if (!name)
         throw new Error("name cannot be null.");
       this.name = name;
@@ -836,6 +843,8 @@ var spine = (() => {
     sequence: 28
   };
   var Timeline = class {
+    propertyIds;
+    frames;
     constructor(frameCount, propertyIds) {
       this.propertyIds = propertyIds;
       this.frames = Utils.newFloatArray(frameCount * this.getFrameEntries());
@@ -868,6 +877,7 @@ var spine = (() => {
     }
   };
   var CurveTimeline = class extends Timeline {
+    curves;
     // type, x, y, ...
     constructor(frameCount, bezierCount, propertyIds) {
       super(frameCount, propertyIds);
@@ -1123,9 +1133,9 @@ var spine = (() => {
     }
   };
   var RotateTimeline = class extends CurveTimeline1 {
+    boneIndex = 0;
     constructor(frameCount, bezierCount, boneIndex) {
       super(frameCount, bezierCount, Property.rotate + "|" + boneIndex);
-      this.boneIndex = 0;
       this.boneIndex = boneIndex;
     }
     apply(skeleton, lastTime, time, events, alpha, blend, direction) {
@@ -1135,6 +1145,7 @@ var spine = (() => {
     }
   };
   var TranslateTimeline = class extends CurveTimeline2 {
+    boneIndex = 0;
     constructor(frameCount, bezierCount, boneIndex) {
       super(
         frameCount,
@@ -1142,7 +1153,6 @@ var spine = (() => {
         Property.x + "|" + boneIndex,
         Property.y + "|" + boneIndex
       );
-      this.boneIndex = 0;
       this.boneIndex = boneIndex;
     }
     apply(skeleton, lastTime, time, events, alpha, blend, direction) {
@@ -1240,9 +1250,9 @@ var spine = (() => {
     }
   };
   var TranslateXTimeline = class extends CurveTimeline1 {
+    boneIndex = 0;
     constructor(frameCount, bezierCount, boneIndex) {
       super(frameCount, bezierCount, Property.x + "|" + boneIndex);
-      this.boneIndex = 0;
       this.boneIndex = boneIndex;
     }
     apply(skeleton, lastTime, time, events, alpha, blend, direction) {
@@ -1252,9 +1262,9 @@ var spine = (() => {
     }
   };
   var TranslateYTimeline = class extends CurveTimeline1 {
+    boneIndex = 0;
     constructor(frameCount, bezierCount, boneIndex) {
       super(frameCount, bezierCount, Property.y + "|" + boneIndex);
-      this.boneIndex = 0;
       this.boneIndex = boneIndex;
     }
     apply(skeleton, lastTime, time, events, alpha, blend, direction) {
@@ -1264,6 +1274,7 @@ var spine = (() => {
     }
   };
   var ScaleTimeline = class extends CurveTimeline2 {
+    boneIndex = 0;
     constructor(frameCount, bezierCount, boneIndex) {
       super(
         frameCount,
@@ -1271,7 +1282,6 @@ var spine = (() => {
         Property.scaleX + "|" + boneIndex,
         Property.scaleY + "|" + boneIndex
       );
-      this.boneIndex = 0;
       this.boneIndex = boneIndex;
     }
     apply(skeleton, lastTime, time, events, alpha, blend, direction) {
@@ -1407,9 +1417,9 @@ var spine = (() => {
     }
   };
   var ScaleXTimeline = class extends CurveTimeline1 {
+    boneIndex = 0;
     constructor(frameCount, bezierCount, boneIndex) {
       super(frameCount, bezierCount, Property.scaleX + "|" + boneIndex);
-      this.boneIndex = 0;
       this.boneIndex = boneIndex;
     }
     apply(skeleton, lastTime, time, events, alpha, blend, direction) {
@@ -1419,9 +1429,9 @@ var spine = (() => {
     }
   };
   var ScaleYTimeline = class extends CurveTimeline1 {
+    boneIndex = 0;
     constructor(frameCount, bezierCount, boneIndex) {
       super(frameCount, bezierCount, Property.scaleY + "|" + boneIndex);
-      this.boneIndex = 0;
       this.boneIndex = boneIndex;
     }
     apply(skeleton, lastTime, time, events, alpha, blend, direction) {
@@ -1431,6 +1441,7 @@ var spine = (() => {
     }
   };
   var ShearTimeline = class extends CurveTimeline2 {
+    boneIndex = 0;
     constructor(frameCount, bezierCount, boneIndex) {
       super(
         frameCount,
@@ -1438,7 +1449,6 @@ var spine = (() => {
         Property.shearX + "|" + boneIndex,
         Property.shearY + "|" + boneIndex
       );
-      this.boneIndex = 0;
       this.boneIndex = boneIndex;
     }
     apply(skeleton, lastTime, time, events, alpha, blend, direction) {
@@ -1536,9 +1546,9 @@ var spine = (() => {
     }
   };
   var ShearXTimeline = class extends CurveTimeline1 {
+    boneIndex = 0;
     constructor(frameCount, bezierCount, boneIndex) {
       super(frameCount, bezierCount, Property.shearX + "|" + boneIndex);
-      this.boneIndex = 0;
       this.boneIndex = boneIndex;
     }
     apply(skeleton, lastTime, time, events, alpha, blend, direction) {
@@ -1548,9 +1558,9 @@ var spine = (() => {
     }
   };
   var ShearYTimeline = class extends CurveTimeline1 {
+    boneIndex = 0;
     constructor(frameCount, bezierCount, boneIndex) {
       super(frameCount, bezierCount, Property.shearY + "|" + boneIndex);
-      this.boneIndex = 0;
       this.boneIndex = boneIndex;
     }
     apply(skeleton, lastTime, time, events, alpha, blend, direction) {
@@ -1560,9 +1570,9 @@ var spine = (() => {
     }
   };
   var InheritTimeline = class extends Timeline {
+    boneIndex = 0;
     constructor(frameCount, boneIndex) {
       super(frameCount, [Property.inherit + "|" + boneIndex]);
-      this.boneIndex = 0;
       this.boneIndex = boneIndex;
     }
     getFrameEntries() {
@@ -1583,6 +1593,11 @@ var spine = (() => {
       let bone = skeleton.bones[this.boneIndex];
       if (!bone.active)
         return;
+      if (direction == 1 /* mixOut */) {
+        if (blend == 0 /* setup */)
+          bone.inherit = bone.data.inherit;
+        return;
+      }
       let frames = this.frames;
       if (time < frames[0]) {
         if (blend == 0 /* setup */ || blend == 1 /* first */)
@@ -1601,12 +1616,12 @@ var spine = (() => {
     }
   };
   var RGBATimeline = class extends CurveTimeline {
+    slotIndex = 0;
     constructor(frameCount, bezierCount, slotIndex) {
       super(frameCount, bezierCount, [
         Property.rgb + "|" + slotIndex,
         Property.alpha + "|" + slotIndex
       ]);
-      this.slotIndex = 0;
       this.slotIndex = slotIndex;
     }
     getFrameEntries() {
@@ -1764,11 +1779,11 @@ var spine = (() => {
     }
   };
   var RGBTimeline = class extends CurveTimeline {
+    slotIndex = 0;
     constructor(frameCount, bezierCount, slotIndex) {
       super(frameCount, bezierCount, [
         Property.rgb + "|" + slotIndex
       ]);
-      this.slotIndex = 0;
       this.slotIndex = slotIndex;
     }
     getFrameEntries() {
@@ -1907,9 +1922,9 @@ var spine = (() => {
     }
   };
   var AlphaTimeline = class extends CurveTimeline1 {
+    slotIndex = 0;
     constructor(frameCount, bezierCount, slotIndex) {
       super(frameCount, bezierCount, Property.alpha + "|" + slotIndex);
-      this.slotIndex = 0;
       this.slotIndex = slotIndex;
     }
     apply(skeleton, lastTime, time, events, alpha, blend, direction) {
@@ -1939,13 +1954,13 @@ var spine = (() => {
     }
   };
   var RGBA2Timeline = class extends CurveTimeline {
+    slotIndex = 0;
     constructor(frameCount, bezierCount, slotIndex) {
       super(frameCount, bezierCount, [
         Property.rgb + "|" + slotIndex,
         Property.alpha + "|" + slotIndex,
         Property.rgb2 + "|" + slotIndex
       ]);
-      this.slotIndex = 0;
       this.slotIndex = slotIndex;
     }
     getFrameEntries() {
@@ -2186,12 +2201,12 @@ var spine = (() => {
     }
   };
   var RGB2Timeline = class extends CurveTimeline {
+    slotIndex = 0;
     constructor(frameCount, bezierCount, slotIndex) {
       super(frameCount, bezierCount, [
         Property.rgb + "|" + slotIndex,
         Property.rgb2 + "|" + slotIndex
       ]);
-      this.slotIndex = 0;
       this.slotIndex = slotIndex;
     }
     getFrameEntries() {
@@ -2417,11 +2432,13 @@ var spine = (() => {
     }
   };
   var AttachmentTimeline = class extends Timeline {
+    slotIndex = 0;
+    /** The attachment name for each key frame. May contain null values to clear the attachment. */
+    attachmentNames;
     constructor(frameCount, slotIndex) {
       super(frameCount, [
         Property.attachment + "|" + slotIndex
       ]);
-      this.slotIndex = 0;
       this.slotIndex = slotIndex;
       this.attachmentNames = new Array(frameCount);
     }
@@ -2454,11 +2471,15 @@ var spine = (() => {
     }
   };
   var DeformTimeline = class extends CurveTimeline {
+    slotIndex = 0;
+    /** The attachment that will be deformed. */
+    attachment;
+    /** The vertices for each key frame. */
+    vertices;
     constructor(frameCount, bezierCount, slotIndex, attachment) {
       super(frameCount, bezierCount, [
         Property.deform + "|" + slotIndex + "|" + attachment.id
       ]);
-      this.slotIndex = 0;
       this.slotIndex = slotIndex;
       this.attachment = attachment;
       this.vertices = new Array(frameCount);
@@ -2679,6 +2700,8 @@ var spine = (() => {
     }
   };
   var _EventTimeline = class extends Timeline {
+    /** The event for each key frame. */
+    events;
     constructor(frameCount) {
       super(frameCount, _EventTimeline.propertyIds);
       this.events = new Array(frameCount);
@@ -2721,8 +2744,10 @@ var spine = (() => {
     }
   };
   var EventTimeline = _EventTimeline;
-  EventTimeline.propertyIds = ["" + Property.event];
+  __publicField(EventTimeline, "propertyIds", ["" + Property.event]);
   var _DrawOrderTimeline = class extends Timeline {
+    /** The draw order for each key frame. See {@link #setFrame(int, float, int[])}. */
+    drawOrders;
     constructor(frameCount) {
       super(frameCount, _DrawOrderTimeline.propertyIds);
       this.drawOrders = new Array(frameCount);
@@ -2761,14 +2786,14 @@ var spine = (() => {
     }
   };
   var DrawOrderTimeline = _DrawOrderTimeline;
-  DrawOrderTimeline.propertyIds = ["" + Property.drawOrder];
+  __publicField(DrawOrderTimeline, "propertyIds", ["" + Property.drawOrder]);
   var IkConstraintTimeline = class extends CurveTimeline {
+    /** The index of the IK constraint in {@link Skeleton#getIkConstraints()} that will be changed when this timeline is applied */
+    constraintIndex = 0;
     constructor(frameCount, bezierCount, ikConstraintIndex) {
       super(frameCount, bezierCount, [
         Property.ikConstraint + "|" + ikConstraintIndex
       ]);
-      /** The index of the IK constraint in {@link Skeleton#getIkConstraints()} that will be changed when this timeline is applied */
-      this.constraintIndex = 0;
       this.constraintIndex = ikConstraintIndex;
     }
     getFrameEntries() {
@@ -2925,12 +2950,12 @@ var spine = (() => {
     }
   };
   var TransformConstraintTimeline = class extends CurveTimeline {
+    /** The index of the transform constraint slot in {@link Skeleton#transformConstraints} that will be changed. */
+    constraintIndex = 0;
     constructor(frameCount, bezierCount, transformConstraintIndex) {
       super(frameCount, bezierCount, [
         Property.transformConstraint + "|" + transformConstraintIndex
       ]);
-      /** The index of the transform constraint slot in {@link Skeleton#transformConstraints} that will be changed. */
-      this.constraintIndex = 0;
       this.constraintIndex = transformConstraintIndex;
     }
     getFrameEntries() {
@@ -3148,11 +3173,11 @@ var spine = (() => {
     }
   };
   var PathConstraintPositionTimeline = class extends CurveTimeline1 {
+    /** The index of the path constraint in {@link Skeleton#getPathConstraints()} that will be changed when this timeline is
+     * applied. */
+    constraintIndex = 0;
     constructor(frameCount, bezierCount, pathConstraintIndex) {
       super(frameCount, bezierCount, Property.pathConstraintPosition + "|" + pathConstraintIndex);
-      /** The index of the path constraint in {@link Skeleton#getPathConstraints()} that will be changed when this timeline is
-       * applied. */
-      this.constraintIndex = 0;
       this.constraintIndex = pathConstraintIndex;
     }
     apply(skeleton, lastTime, time, firedEvents, alpha, blend, direction) {
@@ -3162,11 +3187,11 @@ var spine = (() => {
     }
   };
   var PathConstraintSpacingTimeline = class extends CurveTimeline1 {
+    /** The index of the path constraint in {@link Skeleton#getPathConstraints()} that will be changed when this timeline is
+     * applied. */
+    constraintIndex = 0;
     constructor(frameCount, bezierCount, pathConstraintIndex) {
       super(frameCount, bezierCount, Property.pathConstraintSpacing + "|" + pathConstraintIndex);
-      /** The index of the path constraint in {@link Skeleton#getPathConstraints()} that will be changed when this timeline is
-       * applied. */
-      this.constraintIndex = 0;
       this.constraintIndex = pathConstraintIndex;
     }
     apply(skeleton, lastTime, time, firedEvents, alpha, blend, direction) {
@@ -3176,13 +3201,13 @@ var spine = (() => {
     }
   };
   var PathConstraintMixTimeline = class extends CurveTimeline {
+    /** The index of the path constraint in {@link Skeleton#getPathConstraints()} that will be changed when this timeline is
+     * applied. */
+    constraintIndex = 0;
     constructor(frameCount, bezierCount, pathConstraintIndex) {
       super(frameCount, bezierCount, [
         Property.pathConstraintMix + "|" + pathConstraintIndex
       ]);
-      /** The index of the path constraint in {@link Skeleton#getPathConstraints()} that will be changed when this timeline is
-       * applied. */
-      this.constraintIndex = 0;
       this.constraintIndex = pathConstraintIndex;
     }
     getFrameEntries() {
@@ -3314,12 +3339,12 @@ var spine = (() => {
     }
   };
   var PhysicsConstraintTimeline = class extends CurveTimeline1 {
+    /** The index of the physics constraint in {@link Skeleton#getPhysicsConstraints()} that will be changed when this timeline
+     * is applied, or -1 if all physics constraints in the skeleton will be changed. */
+    constraintIndex = 0;
     /** @param physicsConstraintIndex -1 for all physics constraints in the skeleton. */
     constructor(frameCount, bezierCount, physicsConstraintIndex, property) {
       super(frameCount, bezierCount, property + "|" + physicsConstraintIndex);
-      /** The index of the physics constraint in {@link Skeleton#getPhysicsConstraints()} that will be changed when this timeline
-       * is applied, or -1 if all physics constraints in the skeleton will be changed. */
-      this.constraintIndex = 0;
       this.constraintIndex = physicsConstraintIndex;
     }
     apply(skeleton, lastTime, time, firedEvents, alpha, blend, direction) {
@@ -3457,6 +3482,9 @@ var spine = (() => {
     }
   };
   var _PhysicsConstraintResetTimeline = class extends Timeline {
+    /** The index of the physics constraint in {@link Skeleton#getPhysicsConstraints()} that will be reset when this timeline is
+    * applied, or -1 if all physics constraints in the skeleton will be reset. */
+    constraintIndex;
     /** @param physicsConstraintIndex -1 for all physics constraints in the skeleton. */
     constructor(frameCount, physicsConstraintIndex) {
       super(frameCount, _PhysicsConstraintResetTimeline.propertyIds);
@@ -3499,8 +3527,10 @@ var spine = (() => {
     }
   };
   var PhysicsConstraintResetTimeline = _PhysicsConstraintResetTimeline;
-  PhysicsConstraintResetTimeline.propertyIds = [Property.physicsConstraintReset.toString()];
+  __publicField(PhysicsConstraintResetTimeline, "propertyIds", [Property.physicsConstraintReset.toString()]);
   var _SequenceTimeline = class extends Timeline {
+    slotIndex;
+    attachment;
     constructor(frameCount, slotIndex, attachment) {
       super(frameCount, [
         Property.sequence + "|" + slotIndex + "|" + attachment.sequence.id
@@ -3536,6 +3566,11 @@ var spine = (() => {
       if (slotAttachment != attachment) {
         if (!(slotAttachment instanceof VertexAttachment) || slotAttachment.timelineAttachment != attachment)
           return;
+      }
+      if (direction == 1 /* mixOut */) {
+        if (blend == 0 /* setup */)
+          slot.sequenceIndex = -1;
+        return;
       }
       let frames = this.frames;
       if (time < frames[0]) {
@@ -3585,31 +3620,33 @@ var spine = (() => {
     }
   };
   var SequenceTimeline = _SequenceTimeline;
-  SequenceTimeline.ENTRIES = 3;
-  SequenceTimeline.MODE = 1;
-  SequenceTimeline.DELAY = 2;
+  __publicField(SequenceTimeline, "ENTRIES", 3);
+  __publicField(SequenceTimeline, "MODE", 1);
+  __publicField(SequenceTimeline, "DELAY", 2);
 
   // spine-core/src/AnimationState.ts
   var _AnimationState = class {
-    constructor(data) {
-      /** The list of tracks that currently have animations, which may contain null entries. */
-      this.tracks = new Array();
-      /** Multiplier for the delta time when the animation state is updated, causing time for all animations and mixes to play slower
-       * or faster. Defaults to 1.
-       *
-       * See TrackEntry {@link TrackEntry#timeScale} for affecting a single animation. */
-      this.timeScale = 1;
-      this.unkeyedState = 0;
-      this.events = new Array();
-      this.listeners = new Array();
-      this.queue = new EventQueue(this);
-      this.propertyIDs = new StringSet();
-      this.animationsChanged = false;
-      this.trackEntryPool = new Pool(() => new TrackEntry());
-      this.data = data;
-    }
     static emptyAnimation() {
       return _AnimationState._emptyAnimation;
+    }
+    /** The AnimationStateData to look up mix durations. */
+    data;
+    /** The list of tracks that currently have animations, which may contain null entries. */
+    tracks = new Array();
+    /** Multiplier for the delta time when the animation state is updated, causing time for all animations and mixes to play slower
+     * or faster. Defaults to 1.
+     *
+     * See TrackEntry {@link TrackEntry#timeScale} for affecting a single animation. */
+    timeScale = 1;
+    unkeyedState = 0;
+    events = new Array();
+    listeners = new Array();
+    queue = new EventQueue(this);
+    propertyIDs = new StringSet();
+    animationsChanged = false;
+    trackEntryPool = new Pool(() => new TrackEntry());
+    constructor(data) {
+      this.data = data;
     }
     /** Increments each track entry {@link TrackEntry#trackTime()}, setting queued animations as current if needed. */
     update(delta) {
@@ -3671,10 +3708,10 @@ var spine = (() => {
       let finished = this.updateMixingFrom(from, delta);
       from.animationLast = from.nextAnimationLast;
       from.trackLast = from.nextTrackLast;
-      if (to.mixTime > 0 && to.mixTime >= to.mixDuration) {
+      if (to.nextTrackLast != -1 && to.mixTime >= to.mixDuration) {
         if (from.totalAlpha == 0 || to.mixDuration == 0) {
           to.mixingFrom = from.mixingFrom;
-          if (from.mixingFrom)
+          if (from.mixingFrom != null)
             from.mixingFrom.mixingTo = to;
           to.interruptAlpha = from.interruptAlpha;
           this.queue.end(from);
@@ -4078,11 +4115,13 @@ var spine = (() => {
       if (!last) {
         this.setCurrent(trackIndex, entry, true);
         this.queue.drain();
+        if (delay < 0)
+          delay = 0;
       } else {
         last.next = entry;
         entry.previous = last;
         if (delay <= 0)
-          delay += last.getTrackComplete() - entry.mixDuration;
+          delay = Math.max(delay + last.getTrackComplete() - entry.mixDuration, 0);
       }
       entry.delay = delay;
       return entry;
@@ -4121,7 +4160,7 @@ var spine = (() => {
     addEmptyAnimation(trackIndex, mixDuration = 0, delay = 0) {
       let entry = this.addAnimationWith(trackIndex, _AnimationState.emptyAnimation(), false, delay);
       if (delay <= 0)
-        entry.delay += entry.mixDuration - mixDuration;
+        entry.delay = Math.max(entry.delay + entry.mixDuration - mixDuration, 0);
       entry.mixDuration = mixDuration;
       entry.trackEnd = mixDuration;
       return entry;
@@ -4271,144 +4310,132 @@ var spine = (() => {
     }
   };
   var AnimationState = _AnimationState;
-  AnimationState._emptyAnimation = new Animation("<empty>", [], 0);
+  __publicField(AnimationState, "_emptyAnimation", new Animation("<empty>", [], 0));
   var TrackEntry = class {
-    constructor() {
-      /** The animation to apply for this track entry. */
-      this.animation = null;
-      this.previous = null;
-      /** The animation queued to start after this animation, or null. `next` makes up a linked list. */
-      this.next = null;
-      /** The track entry for the previous animation when mixing from the previous animation to this animation, or null if no
-       * mixing is currently occuring. When mixing from multiple animations, `mixingFrom` makes up a linked list. */
-      this.mixingFrom = null;
-      /** The track entry for the next animation when mixing from this animation to the next animation, or null if no mixing is
-       * currently occuring. When mixing to multiple animations, `mixingTo` makes up a linked list. */
-      this.mixingTo = null;
-      /** The listener for events generated by this track entry, or null.
-       *
-       * A track entry returned from {@link AnimationState#setAnimation()} is already the current animation
-       * for the track, so the track entry listener {@link AnimationStateListener#start()} will not be called. */
-      this.listener = null;
-      /** The index of the track where this track entry is either current or queued.
-       *
-       * See {@link AnimationState#getCurrent()}. */
-      this.trackIndex = 0;
-      /** If true, the animation will repeat. If false it will not, instead its last frame is applied if played beyond its
-       * duration. */
-      this.loop = false;
-      /** If true, when mixing from the previous animation to this animation, the previous animation is applied as normal instead
-       * of being mixed out.
-       *
-       * When mixing between animations that key the same property, if a lower track also keys that property then the value will
-       * briefly dip toward the lower track value during the mix. This happens because the first animation mixes from 100% to 0%
-       * while the second animation mixes from 0% to 100%. Setting `holdPrevious` to true applies the first animation
-       * at 100% during the mix so the lower track value is overwritten. Such dipping does not occur on the lowest track which
-       * keys the property, only when a higher track also keys the property.
-       *
-       * Snapping will occur if `holdPrevious` is true and this animation does not key all the same properties as the
-       * previous animation. */
-      this.holdPrevious = false;
-      this.reverse = false;
-      this.shortestRotation = false;
-      /** When the mix percentage ({@link #mixTime} / {@link #mixDuration}) is less than the
-       * `eventThreshold`, event timelines are applied while this animation is being mixed out. Defaults to 0, so event
-       * timelines are not applied while this animation is being mixed out. */
-      this.eventThreshold = 0;
-      /** When the mix percentage ({@link #mixtime} / {@link #mixDuration}) is less than the
-       * `attachmentThreshold`, attachment timelines are applied while this animation is being mixed out. Defaults to
-       * 0, so attachment timelines are not applied while this animation is being mixed out. */
-      this.mixAttachmentThreshold = 0;
-      /** When {@link #getAlpha()} is greater than <code>alphaAttachmentThreshold</code>, attachment timelines are applied.
-       * Defaults to 0, so attachment timelines are always applied. */
-      this.alphaAttachmentThreshold = 0;
-      /** When the mix percentage ({@link #getMixTime()} / {@link #getMixDuration()}) is less than the
-       * <code>mixDrawOrderThreshold</code>, draw order timelines are applied while this animation is being mixed out. Defaults to
-       * 0, so draw order timelines are not applied while this animation is being mixed out. */
-      this.mixDrawOrderThreshold = 0;
-      /** Seconds when this animation starts, both initially and after looping. Defaults to 0.
-       *
-       * When changing the `animationStart` time, it often makes sense to set {@link #animationLast} to the same
-       * value to prevent timeline keys before the start time from triggering. */
-      this.animationStart = 0;
-      /** Seconds for the last frame of this animation. Non-looping animations won't play past this time. Looping animations will
-       * loop back to {@link #animationStart} at this time. Defaults to the animation {@link Animation#duration}. */
-      this.animationEnd = 0;
-      /** The time in seconds this animation was last applied. Some timelines use this for one-time triggers. Eg, when this
-       * animation is applied, event timelines will fire all events between the `animationLast` time (exclusive) and
-       * `animationTime` (inclusive). Defaults to -1 to ensure triggers on frame 0 happen the first time this animation
-       * is applied. */
-      this.animationLast = 0;
-      this.nextAnimationLast = 0;
-      /** Seconds to postpone playing the animation. When this track entry is the current track entry, `delay`
-       * postpones incrementing the {@link #trackTime}. When this track entry is queued, `delay` is the time from
-       * the start of the previous animation to when this track entry will become the current track entry (ie when the previous
-       * track entry {@link TrackEntry#trackTime} >= this track entry's `delay`).
-       *
-       * {@link #timeScale} affects the delay. */
-      this.delay = 0;
-      /** Current time in seconds this track entry has been the current track entry. The track time determines
-       * {@link #animationTime}. The track time can be set to start the animation at a time other than 0, without affecting
-       * looping. */
-      this.trackTime = 0;
-      this.trackLast = 0;
-      this.nextTrackLast = 0;
-      /** The track time in seconds when this animation will be removed from the track. Defaults to the highest possible float
-       * value, meaning the animation will be applied until a new animation is set or the track is cleared. If the track end time
-       * is reached, no other animations are queued for playback, and mixing from any previous animations is complete, then the
-       * properties keyed by the animation are set to the setup pose and the track is cleared.
-       *
-       * It may be desired to use {@link AnimationState#addEmptyAnimation()} rather than have the animation
-       * abruptly cease being applied. */
-      this.trackEnd = 0;
-      /** Multiplier for the delta time when this track entry is updated, causing time for this animation to pass slower or
-       * faster. Defaults to 1.
-       *
-       * {@link #mixTime} is not affected by track entry time scale, so {@link #mixDuration} may need to be adjusted to
-       * match the animation speed.
-       *
-       * When using {@link AnimationState#addAnimation()} with a `delay` <= 0, note the
-       * {@link #delay} is set using the mix duration from the {@link AnimationStateData}, assuming time scale to be 1. If
-       * the time scale is not 1, the delay may need to be adjusted.
-       *
-       * See AnimationState {@link AnimationState#timeScale} for affecting all animations. */
-      this.timeScale = 0;
-      /** Values < 1 mix this animation with the skeleton's current pose (usually the pose resulting from lower tracks). Defaults
-       * to 1, which overwrites the skeleton's current pose with this animation.
-       *
-       * Typically track 0 is used to completely pose the skeleton, then alpha is used on higher tracks. It doesn't make sense to
-       * use alpha on track 0 if the skeleton pose is from the last frame render. */
-      this.alpha = 0;
-      /** Seconds from 0 to the {@link #getMixDuration()} when mixing from the previous animation to this animation. May be
-       * slightly more than `mixDuration` when the mix is complete. */
-      this.mixTime = 0;
-      /** Seconds for mixing from the previous animation to this animation. Defaults to the value provided by AnimationStateData
-       * {@link AnimationStateData#getMix()} based on the animation before this animation (if any).
-       *
-       * A mix duration of 0 still mixes out over one frame to provide the track entry being mixed out a chance to revert the
-       * properties it was animating.
-       *
-       * The `mixDuration` can be set manually rather than use the value from
-       * {@link AnimationStateData#getMix()}. In that case, the `mixDuration` can be set for a new
-       * track entry only before {@link AnimationState#update(float)} is first called.
-       *
-       * When using {@link AnimationState#addAnimation()} with a `delay` <= 0, note the
-       * {@link #delay} is set using the mix duration from the {@link AnimationStateData}, not a mix duration set
-       * afterward. */
-      this._mixDuration = 0;
-      this.interruptAlpha = 0;
-      this.totalAlpha = 0;
-      /** Controls how properties keyed in the animation are mixed with lower tracks. Defaults to {@link MixBlend#replace}, which
-       * replaces the values from the lower tracks with the animation values. {@link MixBlend#add} adds the animation values to
-       * the values from the lower tracks.
-       *
-       * The `mixBlend` can be set for a new track entry only before {@link AnimationState#apply()} is first
-       * called. */
-      this.mixBlend = 2 /* replace */;
-      this.timelineMode = new Array();
-      this.timelineHoldMix = new Array();
-      this.timelinesRotation = new Array();
-    }
+    /** The animation to apply for this track entry. */
+    animation = null;
+    previous = null;
+    /** The animation queued to start after this animation, or null. `next` makes up a linked list. */
+    next = null;
+    /** The track entry for the previous animation when mixing from the previous animation to this animation, or null if no
+     * mixing is currently occuring. When mixing from multiple animations, `mixingFrom` makes up a linked list. */
+    mixingFrom = null;
+    /** The track entry for the next animation when mixing from this animation to the next animation, or null if no mixing is
+     * currently occuring. When mixing to multiple animations, `mixingTo` makes up a linked list. */
+    mixingTo = null;
+    /** The listener for events generated by this track entry, or null.
+     *
+     * A track entry returned from {@link AnimationState#setAnimation()} is already the current animation
+     * for the track, so the track entry listener {@link AnimationStateListener#start()} will not be called. */
+    listener = null;
+    /** The index of the track where this track entry is either current or queued.
+     *
+     * See {@link AnimationState#getCurrent()}. */
+    trackIndex = 0;
+    /** If true, the animation will repeat. If false it will not, instead its last frame is applied if played beyond its
+     * duration. */
+    loop = false;
+    /** If true, when mixing from the previous animation to this animation, the previous animation is applied as normal instead
+     * of being mixed out.
+     *
+     * When mixing between animations that key the same property, if a lower track also keys that property then the value will
+     * briefly dip toward the lower track value during the mix. This happens because the first animation mixes from 100% to 0%
+     * while the second animation mixes from 0% to 100%. Setting `holdPrevious` to true applies the first animation
+     * at 100% during the mix so the lower track value is overwritten. Such dipping does not occur on the lowest track which
+     * keys the property, only when a higher track also keys the property.
+     *
+     * Snapping will occur if `holdPrevious` is true and this animation does not key all the same properties as the
+     * previous animation. */
+    holdPrevious = false;
+    reverse = false;
+    shortestRotation = false;
+    /** When the mix percentage ({@link #mixTime} / {@link #mixDuration}) is less than the
+     * `eventThreshold`, event timelines are applied while this animation is being mixed out. Defaults to 0, so event
+     * timelines are not applied while this animation is being mixed out. */
+    eventThreshold = 0;
+    /** When the mix percentage ({@link #mixtime} / {@link #mixDuration}) is less than the
+     * `attachmentThreshold`, attachment timelines are applied while this animation is being mixed out. Defaults to
+     * 0, so attachment timelines are not applied while this animation is being mixed out. */
+    mixAttachmentThreshold = 0;
+    /** When {@link #getAlpha()} is greater than <code>alphaAttachmentThreshold</code>, attachment timelines are applied.
+     * Defaults to 0, so attachment timelines are always applied. */
+    alphaAttachmentThreshold = 0;
+    /** When the mix percentage ({@link #getMixTime()} / {@link #getMixDuration()}) is less than the
+     * <code>mixDrawOrderThreshold</code>, draw order timelines are applied while this animation is being mixed out. Defaults to
+     * 0, so draw order timelines are not applied while this animation is being mixed out. */
+    mixDrawOrderThreshold = 0;
+    /** Seconds when this animation starts, both initially and after looping. Defaults to 0.
+     *
+     * When changing the `animationStart` time, it often makes sense to set {@link #animationLast} to the same
+     * value to prevent timeline keys before the start time from triggering. */
+    animationStart = 0;
+    /** Seconds for the last frame of this animation. Non-looping animations won't play past this time. Looping animations will
+     * loop back to {@link #animationStart} at this time. Defaults to the animation {@link Animation#duration}. */
+    animationEnd = 0;
+    /** The time in seconds this animation was last applied. Some timelines use this for one-time triggers. Eg, when this
+     * animation is applied, event timelines will fire all events between the `animationLast` time (exclusive) and
+     * `animationTime` (inclusive). Defaults to -1 to ensure triggers on frame 0 happen the first time this animation
+     * is applied. */
+    animationLast = 0;
+    nextAnimationLast = 0;
+    /** Seconds to postpone playing the animation. When this track entry is the current track entry, `delay`
+     * postpones incrementing the {@link #trackTime}. When this track entry is queued, `delay` is the time from
+     * the start of the previous animation to when this track entry will become the current track entry (ie when the previous
+     * track entry {@link TrackEntry#trackTime} >= this track entry's `delay`).
+     *
+     * {@link #timeScale} affects the delay. */
+    delay = 0;
+    /** Current time in seconds this track entry has been the current track entry. The track time determines
+     * {@link #animationTime}. The track time can be set to start the animation at a time other than 0, without affecting
+     * looping. */
+    trackTime = 0;
+    trackLast = 0;
+    nextTrackLast = 0;
+    /** The track time in seconds when this animation will be removed from the track. Defaults to the highest possible float
+     * value, meaning the animation will be applied until a new animation is set or the track is cleared. If the track end time
+     * is reached, no other animations are queued for playback, and mixing from any previous animations is complete, then the
+     * properties keyed by the animation are set to the setup pose and the track is cleared.
+     *
+     * It may be desired to use {@link AnimationState#addEmptyAnimation()} rather than have the animation
+     * abruptly cease being applied. */
+    trackEnd = 0;
+    /** Multiplier for the delta time when this track entry is updated, causing time for this animation to pass slower or
+     * faster. Defaults to 1.
+     *
+     * {@link #mixTime} is not affected by track entry time scale, so {@link #mixDuration} may need to be adjusted to
+     * match the animation speed.
+     *
+     * When using {@link AnimationState#addAnimation()} with a `delay` <= 0, note the
+     * {@link #delay} is set using the mix duration from the {@link AnimationStateData}, assuming time scale to be 1. If
+     * the time scale is not 1, the delay may need to be adjusted.
+     *
+     * See AnimationState {@link AnimationState#timeScale} for affecting all animations. */
+    timeScale = 0;
+    /** Values < 1 mix this animation with the skeleton's current pose (usually the pose resulting from lower tracks). Defaults
+     * to 1, which overwrites the skeleton's current pose with this animation.
+     *
+     * Typically track 0 is used to completely pose the skeleton, then alpha is used on higher tracks. It doesn't make sense to
+     * use alpha on track 0 if the skeleton pose is from the last frame render. */
+    alpha = 0;
+    /** Seconds from 0 to the {@link #getMixDuration()} when mixing from the previous animation to this animation. May be
+     * slightly more than `mixDuration` when the mix is complete. */
+    mixTime = 0;
+    /** Seconds for mixing from the previous animation to this animation. Defaults to the value provided by AnimationStateData
+     * {@link AnimationStateData#getMix()} based on the animation before this animation (if any).
+     *
+     * A mix duration of 0 still mixes out over one frame to provide the track entry being mixed out a chance to revert the
+     * properties it was animating.
+     *
+     * The `mixDuration` can be set manually rather than use the value from
+     * {@link AnimationStateData#getMix()}. In that case, the `mixDuration` can be set for a new
+     * track entry only before {@link AnimationState#update(float)} is first called.
+     *
+     * When using {@link AnimationState#addAnimation()} with a `delay` <= 0, note the
+     * {@link #delay} is set using the mix duration from the {@link AnimationStateData}, not a mix duration set
+     * afterward. */
+    _mixDuration = 0;
+    interruptAlpha = 0;
+    totalAlpha = 0;
     get mixDuration() {
       return this._mixDuration;
     }
@@ -4417,10 +4444,24 @@ var spine = (() => {
     }
     setMixDurationWithDelay(mixDuration, delay) {
       this._mixDuration = mixDuration;
-      if (this.previous != null && delay <= 0)
-        delay += this.previous.getTrackComplete() - mixDuration;
+      if (delay <= 0) {
+        if (this.previous != null)
+          delay = Math.max(delay + this.previous.getTrackComplete() - mixDuration, 0);
+        else
+          delay = 0;
+      }
       this.delay = delay;
     }
+    /** Controls how properties keyed in the animation are mixed with lower tracks. Defaults to {@link MixBlend#replace}, which
+     * replaces the values from the lower tracks with the animation values. {@link MixBlend#add} adds the animation values to
+     * the values from the lower tracks.
+     *
+     * The `mixBlend` can be set for a new track entry only before {@link AnimationState#apply()} is first
+     * called. */
+    mixBlend = 2 /* replace */;
+    timelineMode = new Array();
+    timelineHoldMix = new Array();
+    timelinesRotation = new Array();
     reset() {
       this.next = null;
       this.previous = null;
@@ -4487,35 +4528,36 @@ var spine = (() => {
     }
   };
   var EventQueue = class {
+    objects = [];
+    drainDisabled = false;
+    animState;
     constructor(animState) {
-      this.objects = [];
-      this.drainDisabled = false;
       this.animState = animState;
     }
     start(entry) {
-      this.objects.push(0 /* start */);
+      this.objects.push(EventType.start);
       this.objects.push(entry);
       this.animState.animationsChanged = true;
     }
     interrupt(entry) {
-      this.objects.push(1 /* interrupt */);
+      this.objects.push(EventType.interrupt);
       this.objects.push(entry);
     }
     end(entry) {
-      this.objects.push(2 /* end */);
+      this.objects.push(EventType.end);
       this.objects.push(entry);
       this.animState.animationsChanged = true;
     }
     dispose(entry) {
-      this.objects.push(3 /* dispose */);
+      this.objects.push(EventType.dispose);
       this.objects.push(entry);
     }
     complete(entry) {
-      this.objects.push(4 /* complete */);
+      this.objects.push(EventType.complete);
       this.objects.push(entry);
     }
     event(entry, event) {
-      this.objects.push(5 /* event */);
+      this.objects.push(EventType.event);
       this.objects.push(entry);
       this.objects.push(event);
     }
@@ -4529,7 +4571,7 @@ var spine = (() => {
         let type = objects[i];
         let entry = objects[i + 1];
         switch (type) {
-          case 0 /* start */:
+          case EventType.start:
             if (entry.listener && entry.listener.start)
               entry.listener.start(entry);
             for (let ii = 0; ii < listeners.length; ii++) {
@@ -4538,7 +4580,7 @@ var spine = (() => {
                 listener.start(entry);
             }
             break;
-          case 1 /* interrupt */:
+          case EventType.interrupt:
             if (entry.listener && entry.listener.interrupt)
               entry.listener.interrupt(entry);
             for (let ii = 0; ii < listeners.length; ii++) {
@@ -4547,7 +4589,7 @@ var spine = (() => {
                 listener.interrupt(entry);
             }
             break;
-          case 2 /* end */:
+          case EventType.end:
             if (entry.listener && entry.listener.end)
               entry.listener.end(entry);
             for (let ii = 0; ii < listeners.length; ii++) {
@@ -4555,7 +4597,7 @@ var spine = (() => {
               if (listener.end)
                 listener.end(entry);
             }
-          case 3 /* dispose */:
+          case EventType.dispose:
             if (entry.listener && entry.listener.dispose)
               entry.listener.dispose(entry);
             for (let ii = 0; ii < listeners.length; ii++) {
@@ -4565,7 +4607,7 @@ var spine = (() => {
             }
             this.animState.trackEntryPool.free(entry);
             break;
-          case 4 /* complete */:
+          case EventType.complete:
             if (entry.listener && entry.listener.complete)
               entry.listener.complete(entry);
             for (let ii = 0; ii < listeners.length; ii++) {
@@ -4574,7 +4616,7 @@ var spine = (() => {
                 listener.complete(entry);
             }
             break;
-          case 5 /* event */:
+          case EventType.event:
             let event = objects[i++ + 2];
             if (entry.listener && entry.listener.event)
               entry.listener.event(entry, event);
@@ -4626,10 +4668,12 @@ var spine = (() => {
 
   // spine-core/src/AnimationStateData.ts
   var AnimationStateData = class {
+    /** The SkeletonData to look up animations when they are specified by name. */
+    skeletonData;
+    animationToMixTime = {};
+    /** The mix duration to use when no mix duration has been defined between two animations. */
+    defaultMix = 0;
     constructor(skeletonData) {
-      this.animationToMixTime = {};
-      /** The mix duration to use when no mix duration has been defined between two animations. */
-      this.defaultMix = 0;
       if (!skeletonData)
         throw new Error("skeletonData cannot be null.");
       this.skeletonData = skeletonData;
@@ -4668,9 +4712,9 @@ var spine = (() => {
 
   // spine-core/src/attachments/BoundingBoxAttachment.ts
   var BoundingBoxAttachment = class extends VertexAttachment {
+    color = new Color(1, 1, 1, 1);
     constructor(name) {
       super(name);
-      this.color = new Color(1, 1, 1, 1);
     }
     copy() {
       let copy = new BoundingBoxAttachment(this.name);
@@ -4682,16 +4726,16 @@ var spine = (() => {
 
   // spine-core/src/attachments/ClippingAttachment.ts
   var ClippingAttachment = class extends VertexAttachment {
+    /** Clipping is performed between the clipping polygon's slot and the end slot. Returns null if clipping is done until the end of
+     * the skeleton's rendering. */
+    endSlot = null;
+    // Nonessential.
+    /** The color of the clipping polygon as it was in Spine. Available only when nonessential data was exported. Clipping polygons
+     * are not usually rendered at runtime. */
+    color = new Color(0.2275, 0.2275, 0.8078, 1);
     // ce3a3aff
     constructor(name) {
       super(name);
-      /** Clipping is performed between the clipping polygon's slot and the end slot. Returns null if clipping is done until the end of
-       * the skeleton's rendering. */
-      this.endSlot = null;
-      // Nonessential.
-      /** The color of the clipping polygon as it was in Spine. Available only when nonessential data was exported. Clipping polygons
-       * are not usually rendered at runtime. */
-      this.color = new Color(0.2275, 0.2275, 0.8078, 1);
     }
     copy() {
       let copy = new ClippingAttachment(this.name);
@@ -4704,6 +4748,7 @@ var spine = (() => {
 
   // spine-core/src/Texture.ts
   var Texture = class {
+    _image;
     constructor(image) {
       this._image = image;
     }
@@ -4728,19 +4773,18 @@ var spine = (() => {
     return TextureWrap3;
   })(TextureWrap || {});
   var TextureRegion = class {
-    constructor() {
-      this.u = 0;
-      this.v = 0;
-      this.u2 = 0;
-      this.v2 = 0;
-      this.width = 0;
-      this.height = 0;
-      this.degrees = 0;
-      this.offsetX = 0;
-      this.offsetY = 0;
-      this.originalWidth = 0;
-      this.originalHeight = 0;
-    }
+    texture;
+    u = 0;
+    v = 0;
+    u2 = 0;
+    v2 = 0;
+    width = 0;
+    height = 0;
+    degrees = 0;
+    offsetX = 0;
+    offsetY = 0;
+    originalWidth = 0;
+    originalHeight = 0;
   };
   var FakeTexture = class extends Texture {
     setFilters(minFilter, magFilter) {
@@ -4753,9 +4797,9 @@ var spine = (() => {
 
   // spine-core/src/TextureAtlas.ts
   var TextureAtlas = class {
+    pages = new Array();
+    regions = new Array();
     constructor(atlasText) {
-      this.pages = new Array();
-      this.regions = new Array();
       let reader = new TextureAtlasReader(atlasText);
       let entry = new Array(4);
       let pageFields = {};
@@ -4903,15 +4947,15 @@ var spine = (() => {
         page.setTexture(assetManager.get(pathPrefix + page.name));
     }
     dispose() {
-      var _a;
       for (let i = 0; i < this.pages.length; i++) {
-        (_a = this.pages[i].texture) == null ? void 0 : _a.dispose();
+        this.pages[i].texture?.dispose();
       }
     }
   };
   var TextureAtlasReader = class {
+    lines;
+    index = 0;
     constructor(text) {
-      this.index = 0;
       this.lines = text.split(/\r\n|\r|\n/);
     }
     readLine() {
@@ -4943,16 +4987,17 @@ var spine = (() => {
     }
   };
   var TextureAtlasPage = class {
+    name;
+    minFilter = 9728 /* Nearest */;
+    magFilter = 9728 /* Nearest */;
+    uWrap = 33071 /* ClampToEdge */;
+    vWrap = 33071 /* ClampToEdge */;
+    texture = null;
+    width = 0;
+    height = 0;
+    pma = false;
+    regions = new Array();
     constructor(name) {
-      this.minFilter = 9728 /* Nearest */;
-      this.magFilter = 9728 /* Nearest */;
-      this.uWrap = 33071 /* ClampToEdge */;
-      this.vWrap = 33071 /* ClampToEdge */;
-      this.texture = null;
-      this.width = 0;
-      this.height = 0;
-      this.pma = false;
-      this.regions = new Array();
       this.name = name;
     }
     setTexture(texture) {
@@ -4964,18 +5009,20 @@ var spine = (() => {
     }
   };
   var TextureAtlasRegion = class extends TextureRegion {
+    page;
+    name;
+    x = 0;
+    y = 0;
+    offsetX = 0;
+    offsetY = 0;
+    originalWidth = 0;
+    originalHeight = 0;
+    index = 0;
+    degrees = 0;
+    names = null;
+    values = null;
     constructor(page, name) {
       super();
-      this.x = 0;
-      this.y = 0;
-      this.offsetX = 0;
-      this.offsetY = 0;
-      this.originalWidth = 0;
-      this.originalHeight = 0;
-      this.index = 0;
-      this.degrees = 0;
-      this.names = null;
-      this.values = null;
       this.page = page;
       this.name = name;
       page.regions.push(this);
@@ -4984,31 +5031,33 @@ var spine = (() => {
 
   // spine-core/src/attachments/MeshAttachment.ts
   var MeshAttachment = class extends VertexAttachment {
+    region = null;
+    /** The name of the texture region for this attachment. */
+    path;
+    /** The UV pair for each vertex, normalized within the texture region. */
+    regionUVs = [];
+    /** The UV pair for each vertex, normalized within the entire texture.
+     *
+     * See {@link #updateUVs}. */
+    uvs = [];
+    /** Triplets of vertex indices which describe the mesh's triangulation. */
+    triangles = [];
+    /** The color to tint the mesh. */
+    color = new Color(1, 1, 1, 1);
+    /** The width of the mesh's image. Available only when nonessential data was exported. */
+    width = 0;
+    /** The height of the mesh's image. Available only when nonessential data was exported. */
+    height = 0;
+    /** The number of entries at the beginning of {@link #vertices} that make up the mesh hull. */
+    hullLength = 0;
+    /** Vertex index pairs describing edges for controling triangulation. Mesh triangles will never cross edges. Only available if
+     * nonessential data was exported. Triangulation is not performed at runtime. */
+    edges = [];
+    parentMesh = null;
+    sequence = null;
+    tempColor = new Color(0, 0, 0, 0);
     constructor(name, path) {
       super(name);
-      this.region = null;
-      /** The UV pair for each vertex, normalized within the texture region. */
-      this.regionUVs = [];
-      /** The UV pair for each vertex, normalized within the entire texture.
-       *
-       * See {@link #updateUVs}. */
-      this.uvs = [];
-      /** Triplets of vertex indices which describe the mesh's triangulation. */
-      this.triangles = [];
-      /** The color to tint the mesh. */
-      this.color = new Color(1, 1, 1, 1);
-      /** The width of the mesh's image. Available only when nonessential data was exported. */
-      this.width = 0;
-      /** The height of the mesh's image. Available only when nonessential data was exported. */
-      this.height = 0;
-      /** The number of entries at the beginning of {@link #vertices} that make up the mesh hull. */
-      this.hullLength = 0;
-      /** Vertex index pairs describing edges for controling triangulation. Mesh triangles will never cross edges. Only available if
-       * nonessential data was exported. Triangulation is not performed at runtime. */
-      this.edges = [];
-      this.parentMesh = null;
-      this.sequence = null;
-      this.tempColor = new Color(0, 0, 0, 0);
       this.path = path;
     }
     /** Calculates {@link #uvs} using the {@link #regionUVs} and region. Must be called if the region, the region's properties, or
@@ -5101,7 +5150,7 @@ var spine = (() => {
       this.copyTo(copy);
       copy.regionUVs = new Array(this.regionUVs.length);
       Utils.arrayCopy(this.regionUVs, 0, copy.regionUVs, 0, this.regionUVs.length);
-      copy.uvs = new Array(this.uvs.length);
+      copy.uvs = this.uvs instanceof Float32Array ? Utils.newFloatArray(this.uvs.length) : new Array(this.uvs.length);
       Utils.arrayCopy(this.uvs, 0, copy.uvs, 0, this.uvs.length);
       copy.triangles = new Array(this.triangles.length);
       Utils.arrayCopy(this.triangles, 0, copy.triangles, 0, this.triangles.length);
@@ -5135,18 +5184,18 @@ var spine = (() => {
 
   // spine-core/src/attachments/PathAttachment.ts
   var PathAttachment = class extends VertexAttachment {
+    /** The lengths along the path in the setup pose from the start of the path to the end of each Bezier curve. */
+    lengths = [];
+    /** If true, the start and end knots are connected. */
+    closed = false;
+    /** If true, additional calculations are performed to make calculating positions along the path more accurate. If false, fewer
+     * calculations are performed but calculating positions along the path is less accurate. */
+    constantSpeed = false;
+    /** The color of the path as it was in Spine. Available only when nonessential data was exported. Paths are not usually
+     * rendered at runtime. */
+    color = new Color(1, 1, 1, 1);
     constructor(name) {
       super(name);
-      /** The lengths along the path in the setup pose from the start of the path to the end of each Bezier curve. */
-      this.lengths = [];
-      /** If true, the start and end knots are connected. */
-      this.closed = false;
-      /** If true, additional calculations are performed to make calculating positions along the path more accurate. If false, fewer
-       * calculations are performed but calculating positions along the path is less accurate. */
-      this.constantSpeed = false;
-      /** The color of the path as it was in Spine. Available only when nonessential data was exported. Paths are not usually
-       * rendered at runtime. */
-      this.color = new Color(1, 1, 1, 1);
     }
     copy() {
       let copy = new PathAttachment(this.name);
@@ -5162,14 +5211,14 @@ var spine = (() => {
 
   // spine-core/src/attachments/PointAttachment.ts
   var PointAttachment = class extends VertexAttachment {
+    x = 0;
+    y = 0;
+    rotation = 0;
+    /** The color of the point attachment as it was in Spine. Available only when nonessential data was exported. Point attachments
+     * are not usually rendered at runtime. */
+    color = new Color(0.38, 0.94, 0, 1);
     constructor(name) {
       super(name);
-      this.x = 0;
-      this.y = 0;
-      this.rotation = 0;
-      /** The color of the point attachment as it was in Spine. Available only when nonessential data was exported. Point attachments
-       * are not usually rendered at runtime. */
-      this.color = new Color(0.38, 0.94, 0, 1);
     }
     computeWorldPosition(bone, point) {
       point.x = this.x * bone.a + this.y * bone.b + bone.worldX;
@@ -5194,32 +5243,34 @@ var spine = (() => {
 
   // spine-core/src/attachments/RegionAttachment.ts
   var _RegionAttachment = class extends Attachment {
+    /** The local x translation. */
+    x = 0;
+    /** The local y translation. */
+    y = 0;
+    /** The local scaleX. */
+    scaleX = 1;
+    /** The local scaleY. */
+    scaleY = 1;
+    /** The local rotation. */
+    rotation = 0;
+    /** The width of the region attachment in Spine. */
+    width = 0;
+    /** The height of the region attachment in Spine. */
+    height = 0;
+    /** The color to tint the region attachment. */
+    color = new Color(1, 1, 1, 1);
+    /** The name of the texture region for this attachment. */
+    path;
+    region = null;
+    sequence = null;
+    /** For each of the 4 vertices, a pair of <code>x,y</code> values that is the local position of the vertex.
+     *
+     * See {@link #updateOffset()}. */
+    offset = Utils.newFloatArray(8);
+    uvs = Utils.newFloatArray(8);
+    tempColor = new Color(1, 1, 1, 1);
     constructor(name, path) {
       super(name);
-      /** The local x translation. */
-      this.x = 0;
-      /** The local y translation. */
-      this.y = 0;
-      /** The local scaleX. */
-      this.scaleX = 1;
-      /** The local scaleY. */
-      this.scaleY = 1;
-      /** The local rotation. */
-      this.rotation = 0;
-      /** The width of the region attachment in Spine. */
-      this.width = 0;
-      /** The height of the region attachment in Spine. */
-      this.height = 0;
-      /** The color to tint the region attachment. */
-      this.color = new Color(1, 1, 1, 1);
-      this.region = null;
-      this.sequence = null;
-      /** For each of the 4 vertices, a pair of <code>x,y</code> values that is the local position of the vertex.
-       *
-       * See {@link #updateOffset()}. */
-      this.offset = Utils.newFloatArray(8);
-      this.uvs = Utils.newFloatArray(8);
-      this.tempColor = new Color(1, 1, 1, 1);
       this.path = path;
     }
     /** Calculates the {@link #offset} using the region settings. Must be called after changing region settings. */
@@ -5340,41 +5391,42 @@ var spine = (() => {
     }
   };
   var RegionAttachment = _RegionAttachment;
-  RegionAttachment.X1 = 0;
-  RegionAttachment.Y1 = 1;
-  RegionAttachment.C1R = 2;
-  RegionAttachment.C1G = 3;
-  RegionAttachment.C1B = 4;
-  RegionAttachment.C1A = 5;
-  RegionAttachment.U1 = 6;
-  RegionAttachment.V1 = 7;
-  RegionAttachment.X2 = 8;
-  RegionAttachment.Y2 = 9;
-  RegionAttachment.C2R = 10;
-  RegionAttachment.C2G = 11;
-  RegionAttachment.C2B = 12;
-  RegionAttachment.C2A = 13;
-  RegionAttachment.U2 = 14;
-  RegionAttachment.V2 = 15;
-  RegionAttachment.X3 = 16;
-  RegionAttachment.Y3 = 17;
-  RegionAttachment.C3R = 18;
-  RegionAttachment.C3G = 19;
-  RegionAttachment.C3B = 20;
-  RegionAttachment.C3A = 21;
-  RegionAttachment.U3 = 22;
-  RegionAttachment.V3 = 23;
-  RegionAttachment.X4 = 24;
-  RegionAttachment.Y4 = 25;
-  RegionAttachment.C4R = 26;
-  RegionAttachment.C4G = 27;
-  RegionAttachment.C4B = 28;
-  RegionAttachment.C4A = 29;
-  RegionAttachment.U4 = 30;
-  RegionAttachment.V4 = 31;
+  __publicField(RegionAttachment, "X1", 0);
+  __publicField(RegionAttachment, "Y1", 1);
+  __publicField(RegionAttachment, "C1R", 2);
+  __publicField(RegionAttachment, "C1G", 3);
+  __publicField(RegionAttachment, "C1B", 4);
+  __publicField(RegionAttachment, "C1A", 5);
+  __publicField(RegionAttachment, "U1", 6);
+  __publicField(RegionAttachment, "V1", 7);
+  __publicField(RegionAttachment, "X2", 8);
+  __publicField(RegionAttachment, "Y2", 9);
+  __publicField(RegionAttachment, "C2R", 10);
+  __publicField(RegionAttachment, "C2G", 11);
+  __publicField(RegionAttachment, "C2B", 12);
+  __publicField(RegionAttachment, "C2A", 13);
+  __publicField(RegionAttachment, "U2", 14);
+  __publicField(RegionAttachment, "V2", 15);
+  __publicField(RegionAttachment, "X3", 16);
+  __publicField(RegionAttachment, "Y3", 17);
+  __publicField(RegionAttachment, "C3R", 18);
+  __publicField(RegionAttachment, "C3G", 19);
+  __publicField(RegionAttachment, "C3B", 20);
+  __publicField(RegionAttachment, "C3A", 21);
+  __publicField(RegionAttachment, "U3", 22);
+  __publicField(RegionAttachment, "V3", 23);
+  __publicField(RegionAttachment, "X4", 24);
+  __publicField(RegionAttachment, "Y4", 25);
+  __publicField(RegionAttachment, "C4R", 26);
+  __publicField(RegionAttachment, "C4G", 27);
+  __publicField(RegionAttachment, "C4B", 28);
+  __publicField(RegionAttachment, "C4A", 29);
+  __publicField(RegionAttachment, "U4", 30);
+  __publicField(RegionAttachment, "V4", 31);
 
   // spine-core/src/AtlasAttachmentLoader.ts
   var AtlasAttachmentLoader = class {
+    atlas;
     constructor(atlas) {
       this.atlas = atlas;
     }
@@ -5428,38 +5480,42 @@ var spine = (() => {
 
   // spine-core/src/BoneData.ts
   var BoneData = class {
+    /** The index of the bone in {@link Skeleton#getBones()}. */
+    index = 0;
+    /** The name of the bone, which is unique across all bones in the skeleton. */
+    name;
+    /** @returns May be null. */
+    parent = null;
+    /** The bone's length. */
+    length = 0;
+    /** The local x translation. */
+    x = 0;
+    /** The local y translation. */
+    y = 0;
+    /** The local rotation in degrees, counter clockwise. */
+    rotation = 0;
+    /** The local scaleX. */
+    scaleX = 1;
+    /** The local scaleY. */
+    scaleY = 1;
+    /** The local shearX. */
+    shearX = 0;
+    /** The local shearX. */
+    shearY = 0;
+    /** The transform mode for how parent world transforms affect this bone. */
+    inherit = Inherit.Normal;
+    /** When true, {@link Skeleton#updateWorldTransform()} only updates this bone if the {@link Skeleton#skin} contains this
+      * bone.
+      * @see Skin#bones */
+    skinRequired = false;
+    /** The color of the bone as it was in Spine. Available only when nonessential data was exported. Bones are not usually
+     * rendered at runtime. */
+    color = new Color();
+    /** The bone icon as it was in Spine, or null if nonessential data was not exported. */
+    icon;
+    /** False if the bone was hidden in Spine and nonessential data was exported. Does not affect runtime rendering. */
+    visible = false;
     constructor(index, name, parent) {
-      /** The index of the bone in {@link Skeleton#getBones()}. */
-      this.index = 0;
-      /** @returns May be null. */
-      this.parent = null;
-      /** The bone's length. */
-      this.length = 0;
-      /** The local x translation. */
-      this.x = 0;
-      /** The local y translation. */
-      this.y = 0;
-      /** The local rotation in degrees, counter clockwise. */
-      this.rotation = 0;
-      /** The local scaleX. */
-      this.scaleX = 1;
-      /** The local scaleY. */
-      this.scaleY = 1;
-      /** The local shearX. */
-      this.shearX = 0;
-      /** The local shearX. */
-      this.shearY = 0;
-      /** The transform mode for how parent world transforms affect this bone. */
-      this.inherit = 0 /* Normal */;
-      /** When true, {@link Skeleton#updateWorldTransform()} only updates this bone if the {@link Skeleton#skin} contains this
-        * bone.
-        * @see Skin#bones */
-      this.skinRequired = false;
-      /** The color of the bone as it was in Spine. Available only when nonessential data was exported. Bones are not usually
-       * rendered at runtime. */
-      this.color = new Color();
-      /** False if the bone was hidden in Spine and nonessential data was exported. Does not affect runtime rendering. */
-      this.visible = false;
       if (index < 0)
         throw new Error("index must be >= 0.");
       if (!name)
@@ -5480,55 +5536,59 @@ var spine = (() => {
 
   // spine-core/src/Bone.ts
   var Bone = class {
+    /** The bone's setup pose data. */
+    data;
+    /** The skeleton this bone belongs to. */
+    skeleton;
+    /** The parent bone, or null if this is the root bone. */
+    parent = null;
+    /** The immediate children of this bone. */
+    children = new Array();
+    /** The local x translation. */
+    x = 0;
+    /** The local y translation. */
+    y = 0;
+    /** The local rotation in degrees, counter clockwise. */
+    rotation = 0;
+    /** The local scaleX. */
+    scaleX = 0;
+    /** The local scaleY. */
+    scaleY = 0;
+    /** The local shearX. */
+    shearX = 0;
+    /** The local shearY. */
+    shearY = 0;
+    /** The applied local x translation. */
+    ax = 0;
+    /** The applied local y translation. */
+    ay = 0;
+    /** The applied local rotation in degrees, counter clockwise. */
+    arotation = 0;
+    /** The applied local scaleX. */
+    ascaleX = 0;
+    /** The applied local scaleY. */
+    ascaleY = 0;
+    /** The applied local shearX. */
+    ashearX = 0;
+    /** The applied local shearY. */
+    ashearY = 0;
+    /** Part of the world transform matrix for the X axis. If changed, {@link #updateAppliedTransform()} should be called. */
+    a = 0;
+    /** Part of the world transform matrix for the Y axis. If changed, {@link #updateAppliedTransform()} should be called. */
+    b = 0;
+    /** Part of the world transform matrix for the X axis. If changed, {@link #updateAppliedTransform()} should be called. */
+    c = 0;
+    /** Part of the world transform matrix for the Y axis. If changed, {@link #updateAppliedTransform()} should be called. */
+    d = 0;
+    /** The world X position. If changed, {@link #updateAppliedTransform()} should be called. */
+    worldY = 0;
+    /** The world Y position. If changed, {@link #updateAppliedTransform()} should be called. */
+    worldX = 0;
+    inherit = 0 /* Normal */;
+    sorted = false;
+    active = false;
     /** @param parent May be null. */
     constructor(data, skeleton, parent) {
-      /** The parent bone, or null if this is the root bone. */
-      this.parent = null;
-      /** The immediate children of this bone. */
-      this.children = new Array();
-      /** The local x translation. */
-      this.x = 0;
-      /** The local y translation. */
-      this.y = 0;
-      /** The local rotation in degrees, counter clockwise. */
-      this.rotation = 0;
-      /** The local scaleX. */
-      this.scaleX = 0;
-      /** The local scaleY. */
-      this.scaleY = 0;
-      /** The local shearX. */
-      this.shearX = 0;
-      /** The local shearY. */
-      this.shearY = 0;
-      /** The applied local x translation. */
-      this.ax = 0;
-      /** The applied local y translation. */
-      this.ay = 0;
-      /** The applied local rotation in degrees, counter clockwise. */
-      this.arotation = 0;
-      /** The applied local scaleX. */
-      this.ascaleX = 0;
-      /** The applied local scaleY. */
-      this.ascaleY = 0;
-      /** The applied local shearX. */
-      this.ashearX = 0;
-      /** The applied local shearY. */
-      this.ashearY = 0;
-      /** Part of the world transform matrix for the X axis. If changed, {@link #updateAppliedTransform()} should be called. */
-      this.a = 0;
-      /** Part of the world transform matrix for the Y axis. If changed, {@link #updateAppliedTransform()} should be called. */
-      this.b = 0;
-      /** Part of the world transform matrix for the X axis. If changed, {@link #updateAppliedTransform()} should be called. */
-      this.c = 0;
-      /** Part of the world transform matrix for the Y axis. If changed, {@link #updateAppliedTransform()} should be called. */
-      this.d = 0;
-      /** The world X position. If changed, {@link #updateAppliedTransform()} should be called. */
-      this.worldY = 0;
-      /** The world Y position. If changed, {@link #updateAppliedTransform()} should be called. */
-      this.worldX = 0;
-      this.inherit = 0 /* Normal */;
-      this.sorted = false;
-      this.active = false;
       if (!data)
         throw new Error("data cannot be null.");
       if (!skeleton)
@@ -5607,12 +5667,13 @@ var spine = (() => {
           break;
         }
         case 2 /* NoRotationOrReflection */: {
+          let sx = 1 / this.skeleton.scaleX, sy = 1 / this.skeleton.scaleY;
+          pa *= sx;
+          pc *= sy;
           let s = pa * pa + pc * pc;
           let prx = 0;
           if (s > 1e-4) {
-            s = Math.abs(pa * pd - pb * pc) / s;
-            pa /= this.skeleton.scaleX;
-            pc /= this.skeleton.scaleY;
+            s = Math.abs(pa * pd * sy - pb * sx * pc) / s;
             pb = pc * s;
             pd = pa * s;
             prx = Math.atan2(pc, pa) * MathUtils.radDeg;
@@ -5716,10 +5777,8 @@ var spine = (() => {
         switch (this.inherit) {
           case 2 /* NoRotationOrReflection */: {
             let s2 = Math.abs(pa * pd - pb * pc) / (pa * pa + pc * pc);
-            let sa = pa / this.skeleton.scaleX;
-            let sc = pc / this.skeleton.scaleY;
-            pb = -sc * s2 * this.skeleton.scaleX;
-            pd = sa * s2 * this.skeleton.scaleY;
+            pb = -pc * this.skeleton.scaleX * s2 / this.skeleton.scaleY;
+            pd = pa * this.skeleton.scaleY * s2 / this.skeleton.scaleX;
             pid = 1 / (pa * pd - pb * pc);
             ia = pd * pid;
             ib = pb * pid;
@@ -5846,12 +5905,16 @@ var spine = (() => {
 
   // spine-core/src/AssetManagerBase.ts
   var AssetManagerBase = class {
+    pathPrefix = "";
+    textureLoader;
+    downloader;
+    assets = {};
+    assetsRefCount = {};
+    assetsLoaded = {};
+    errors = {};
+    toLoad = 0;
+    loaded = 0;
     constructor(textureLoader, pathPrefix = "", downloader = new Downloader()) {
-      this.pathPrefix = "";
-      this.assets = {};
-      this.errors = {};
-      this.toLoad = 0;
-      this.loaded = 0;
       this.textureLoader = textureLoader;
       this.pathPrefix = pathPrefix;
       this.downloader = downloader;
@@ -5864,6 +5927,7 @@ var spine = (() => {
       this.toLoad--;
       this.loaded++;
       this.assets[path] = asset;
+      this.assetsRefCount[path] = (this.assetsRefCount[path] || 0) + 1;
       if (callback)
         callback(path, asset);
     }
@@ -5897,10 +5961,17 @@ var spine = (() => {
     }, error = () => {
     }) {
       path = this.start(path);
-      this.downloader.downloadBinary(path, (data) => {
-        this.success(success, path, data);
-      }, (status, responseText) => {
-        this.error(error, path, `Couldn't load binary ${path}: status ${status}, ${responseText}`);
+      if (this.reuseAssets(path, success, error))
+        return;
+      this.assetsLoaded[path] = new Promise((resolve, reject) => {
+        this.downloader.downloadBinary(path, (data) => {
+          this.success(success, path, data);
+          resolve(data);
+        }, (status, responseText) => {
+          const errorMsg = `Couldn't load binary ${path}: status ${status}, ${responseText}`;
+          this.error(error, path, errorMsg);
+          reject(errorMsg);
+        });
       });
     }
     loadText(path, success = () => {
@@ -5917,43 +5988,73 @@ var spine = (() => {
     }, error = () => {
     }) {
       path = this.start(path);
-      this.downloader.downloadJson(path, (data) => {
-        this.success(success, path, data);
-      }, (status, responseText) => {
-        this.error(error, path, `Couldn't load JSON ${path}: status ${status}, ${responseText}`);
+      if (this.reuseAssets(path, success, error))
+        return;
+      this.assetsLoaded[path] = new Promise((resolve, reject) => {
+        this.downloader.downloadJson(path, (data) => {
+          this.success(success, path, data);
+          resolve(data);
+        }, (status, responseText) => {
+          const errorMsg = `Couldn't load JSON ${path}: status ${status}, ${responseText}`;
+          this.error(error, path, errorMsg);
+          reject(errorMsg);
+        });
       });
+    }
+    reuseAssets(path, success = () => {
+    }, error = () => {
+    }) {
+      const loadedStatus = this.assetsLoaded[path];
+      const alreadyExistsOrLoading = loadedStatus !== void 0;
+      if (alreadyExistsOrLoading) {
+        loadedStatus.then((data) => this.success(success, path, data)).catch((errorMsg) => this.error(error, path, errorMsg));
+      }
+      return alreadyExistsOrLoading;
     }
     loadTexture(path, success = () => {
     }, error = () => {
     }) {
       path = this.start(path);
-      let isBrowser = !!(typeof window !== "undefined" && typeof navigator !== "undefined" && window.document);
-      let isWebWorker = !isBrowser;
-      if (isWebWorker) {
-        fetch(path, { mode: "cors" }).then((response) => {
-          if (response.ok)
-            return response.blob();
-          this.error(error, path, `Couldn't load image: ${path}`);
-          return null;
-        }).then((blob) => {
-          return blob ? createImageBitmap(blob, { premultiplyAlpha: "none", colorSpaceConversion: "none" }) : null;
-        }).then((bitmap) => {
-          if (bitmap)
-            this.success(success, path, this.textureLoader(bitmap));
-        });
-      } else {
-        let image = new Image();
-        image.crossOrigin = "anonymous";
-        image.onload = () => {
-          this.success(success, path, this.textureLoader(image));
-        };
-        image.onerror = () => {
-          this.error(error, path, `Couldn't load image: ${path}`);
-        };
-        if (this.downloader.rawDataUris[path])
-          path = this.downloader.rawDataUris[path];
-        image.src = path;
-      }
+      if (this.reuseAssets(path, success, error))
+        return;
+      this.assetsLoaded[path] = new Promise((resolve, reject) => {
+        let isBrowser = !!(typeof window !== "undefined" && typeof navigator !== "undefined" && window.document);
+        let isWebWorker = !isBrowser;
+        if (isWebWorker) {
+          fetch(path, { mode: "cors" }).then((response) => {
+            if (response.ok)
+              return response.blob();
+            const errorMsg = `Couldn't load image: ${path}`;
+            this.error(error, path, `Couldn't load image: ${path}`);
+            reject(errorMsg);
+          }).then((blob) => {
+            return blob ? createImageBitmap(blob, { premultiplyAlpha: "none", colorSpaceConversion: "none" }) : null;
+          }).then((bitmap) => {
+            if (bitmap) {
+              const texture = this.textureLoader(bitmap);
+              this.success(success, path, texture);
+              resolve(texture);
+            }
+            ;
+          });
+        } else {
+          let image = new Image();
+          image.crossOrigin = "anonymous";
+          image.onload = () => {
+            const texture = this.textureLoader(image);
+            this.success(success, path, texture);
+            resolve(texture);
+          };
+          image.onerror = () => {
+            const errorMsg = `Couldn't load image: ${path}`;
+            this.error(error, path, errorMsg);
+            reject(errorMsg);
+          };
+          if (this.downloader.rawDataUris[path])
+            path = this.downloader.rawDataUris[path];
+          image.src = path;
+        }
+      });
     }
     loadTextureAtlas(path, success = () => {
     }, error = () => {
@@ -5961,32 +6062,115 @@ var spine = (() => {
       let index = path.lastIndexOf("/");
       let parent = index >= 0 ? path.substring(0, index + 1) : "";
       path = this.start(path);
-      this.downloader.downloadText(path, (atlasText) => {
-        try {
-          let atlas = new TextureAtlas(atlasText);
-          let toLoad = atlas.pages.length, abort = false;
-          for (let page of atlas.pages) {
-            this.loadTexture(
-              !fileAlias ? parent + page.name : fileAlias[page.name],
-              (imagePath, texture) => {
-                if (!abort) {
-                  page.setTexture(texture);
-                  if (--toLoad == 0)
-                    this.success(success, path, atlas);
+      if (this.reuseAssets(path, success, error))
+        return;
+      this.assetsLoaded[path] = new Promise((resolve, reject) => {
+        this.downloader.downloadText(path, (atlasText) => {
+          try {
+            let atlas = new TextureAtlas(atlasText);
+            let toLoad = atlas.pages.length, abort = false;
+            for (let page of atlas.pages) {
+              this.loadTexture(
+                !fileAlias ? parent + page.name : fileAlias[page.name],
+                (imagePath, texture) => {
+                  if (!abort) {
+                    page.setTexture(texture);
+                    if (--toLoad == 0) {
+                      this.success(success, path, atlas);
+                      resolve(atlas);
+                    }
+                  }
+                },
+                (imagePath, message) => {
+                  if (!abort) {
+                    const errorMsg = `Couldn't load texture atlas ${path} page image: ${imagePath}`;
+                    this.error(error, path, errorMsg);
+                    reject(errorMsg);
+                  }
+                  abort = true;
                 }
-              },
-              (imagePath, message) => {
-                if (!abort)
-                  this.error(error, path, `Couldn't load texture atlas ${path} page image: ${imagePath}`);
-                abort = true;
-              }
-            );
+              );
+            }
+          } catch (e) {
+            const errorMsg = `Couldn't parse texture atlas ${path}: ${e.message}`;
+            this.error(error, path, errorMsg);
+            reject(errorMsg);
           }
-        } catch (e) {
-          this.error(error, path, `Couldn't parse texture atlas ${path}: ${e.message}`);
-        }
-      }, (status, responseText) => {
-        this.error(error, path, `Couldn't load texture atlas ${path}: status ${status}, ${responseText}`);
+        }, (status, responseText) => {
+          const errorMsg = `Couldn't load texture atlas ${path}: status ${status}, ${responseText}`;
+          this.error(error, path, errorMsg);
+          reject(errorMsg);
+        });
+      });
+    }
+    loadTextureAtlasButNoTextures(path, success = () => {
+    }, error = () => {
+    }, fileAlias) {
+      path = this.start(path);
+      if (this.reuseAssets(path, success, error))
+        return;
+      this.assetsLoaded[path] = new Promise((resolve, reject) => {
+        this.downloader.downloadText(path, (atlasText) => {
+          try {
+            const atlas = new TextureAtlas(atlasText);
+            this.success(success, path, atlas);
+            resolve(atlas);
+          } catch (e) {
+            const errorMsg = `Couldn't parse texture atlas ${path}: ${e.message}`;
+            this.error(error, path, errorMsg);
+            reject(errorMsg);
+          }
+        }, (status, responseText) => {
+          const errorMsg = `Couldn't load texture atlas ${path}: status ${status}, ${responseText}`;
+          this.error(error, path, errorMsg);
+          reject(errorMsg);
+        });
+      });
+    }
+    // Promisified versions of load function
+    async loadBinaryAsync(path) {
+      return new Promise((resolve, reject) => {
+        this.loadBinary(
+          path,
+          (_, binary) => resolve(binary),
+          (_, message) => reject(message)
+        );
+      });
+    }
+    async loadJsonAsync(path) {
+      return new Promise((resolve, reject) => {
+        this.loadJson(
+          path,
+          (_, object) => resolve(object),
+          (_, message) => reject(message)
+        );
+      });
+    }
+    async loadTextureAsync(path) {
+      return new Promise((resolve, reject) => {
+        this.loadTexture(
+          path,
+          (_, texture) => resolve(texture),
+          (_, message) => reject(message)
+        );
+      });
+    }
+    async loadTextureAtlasAsync(path) {
+      return new Promise((resolve, reject) => {
+        this.loadTextureAtlas(
+          path,
+          (_, atlas) => resolve(atlas),
+          (_, message) => reject(message)
+        );
+      });
+    }
+    async loadTextureAtlasButNoTexturesAsync(path) {
+      return new Promise((resolve, reject) => {
+        this.loadTextureAtlasButNoTextures(
+          path,
+          (_, atlas) => resolve(atlas),
+          (_, message) => reject(message)
+        );
       });
     }
     get(path) {
@@ -6006,15 +6190,19 @@ var spine = (() => {
       if (asset.dispose)
         asset.dispose();
       delete this.assets[path];
+      delete this.assetsRefCount[path];
+      delete this.assetsLoaded[path];
       return asset;
     }
     removeAll() {
-      for (let key in this.assets) {
-        let asset = this.assets[key];
+      for (let path in this.assets) {
+        let asset = this.assets[path];
         if (asset.dispose)
           asset.dispose();
       }
       this.assets = {};
+      this.assetsLoaded = {};
+      this.assetsRefCount = {};
     }
     isLoadingComplete() {
       return this.toLoad == 0;
@@ -6028,6 +6216,12 @@ var spine = (() => {
     dispose() {
       this.removeAll();
     }
+    // dispose asset only if it's not used by others
+    disposeAsset(path) {
+      if (--this.assetsRefCount[path] === 0) {
+        this.remove(path);
+      }
+    }
     hasErrors() {
       return Object.keys(this.errors).length > 0;
     }
@@ -6036,10 +6230,8 @@ var spine = (() => {
     }
   };
   var Downloader = class {
-    constructor() {
-      this.callbacks = {};
-      this.rawDataUris = {};
-    }
+    callbacks = {};
+    rawDataUris = {};
     dataUriToString(dataUri) {
       if (!dataUri.startsWith("data:")) {
         throw new Error("Not a data URI.");
@@ -6074,10 +6266,10 @@ var spine = (() => {
     downloadText(url, success, error) {
       if (this.start(url, success, error))
         return;
-      if (this.rawDataUris[url]) {
+      const rawDataUri = this.rawDataUris[url];
+      if (rawDataUri && !rawDataUri.includes(".")) {
         try {
-          let dataUri = this.rawDataUris[url];
-          this.finish(url, 200, this.dataUriToString(dataUri));
+          this.finish(url, 200, this.dataUriToString(rawDataUri));
         } catch (e) {
           this.finish(url, 400, JSON.stringify(e));
         }
@@ -6085,7 +6277,7 @@ var spine = (() => {
       }
       let request = new XMLHttpRequest();
       request.overrideMimeType("text/html");
-      request.open("GET", url, true);
+      request.open("GET", rawDataUri ? rawDataUri : url, true);
       let done = () => {
         this.finish(url, request.status, request.responseText);
       };
@@ -6101,17 +6293,17 @@ var spine = (() => {
     downloadBinary(url, success, error) {
       if (this.start(url, success, error))
         return;
-      if (this.rawDataUris[url]) {
+      const rawDataUri = this.rawDataUris[url];
+      if (rawDataUri && !rawDataUri.includes(".")) {
         try {
-          let dataUri = this.rawDataUris[url];
-          this.finish(url, 200, this.dataUriToUint8Array(dataUri));
+          this.finish(url, 200, this.dataUriToUint8Array(rawDataUri));
         } catch (e) {
           this.finish(url, 400, JSON.stringify(e));
         }
         return;
       }
       let request = new XMLHttpRequest();
-      request.open("GET", url, true);
+      request.open("GET", rawDataUri ? rawDataUri : url, true);
       request.responseType = "arraybuffer";
       let onerror = () => {
         this.finish(url, request.status, request.response);
@@ -6146,13 +6338,14 @@ var spine = (() => {
 
   // spine-core/src/Event.ts
   var Event = class {
+    data;
+    intValue = 0;
+    floatValue = 0;
+    stringValue = null;
+    time = 0;
+    volume = 0;
+    balance = 0;
     constructor(time, data) {
-      this.intValue = 0;
-      this.floatValue = 0;
-      this.stringValue = null;
-      this.time = 0;
-      this.volume = 0;
-      this.balance = 0;
       if (!data)
         throw new Error("data cannot be null.");
       this.time = time;
@@ -6162,32 +6355,39 @@ var spine = (() => {
 
   // spine-core/src/EventData.ts
   var EventData = class {
+    name;
+    intValue = 0;
+    floatValue = 0;
+    stringValue = null;
+    audioPath = null;
+    volume = 0;
+    balance = 0;
     constructor(name) {
-      this.intValue = 0;
-      this.floatValue = 0;
-      this.stringValue = null;
-      this.audioPath = null;
-      this.volume = 0;
-      this.balance = 0;
       this.name = name;
     }
   };
 
   // spine-core/src/IkConstraint.ts
   var IkConstraint = class {
+    /** The IK constraint's setup pose data. */
+    data;
+    /** The bones that will be modified by this IK constraint. */
+    bones;
+    /** The bone that is the IK target. */
+    target;
+    /** Controls the bend direction of the IK bones, either 1 or -1. */
+    bendDirection = 0;
+    /** When true and only a single bone is being constrained, if the target is too close, the bone is scaled to reach it. */
+    compress = false;
+    /** When true, if the target is out of range, the parent bone is scaled to reach it. If more than one bone is being constrained
+     * and the parent bone has local nonuniform scale, stretch is not applied. */
+    stretch = false;
+    /** A percentage (0-1) that controls the mix between the constrained and unconstrained rotations. */
+    mix = 1;
+    /** For two bone IK, the distance from the maximum reach of the bones that rotation will slow. */
+    softness = 0;
+    active = false;
     constructor(data, skeleton) {
-      /** Controls the bend direction of the IK bones, either 1 or -1. */
-      this.bendDirection = 0;
-      /** When true and only a single bone is being constrained, if the target is too close, the bone is scaled to reach it. */
-      this.compress = false;
-      /** When true, if the target is out of range, the parent bone is scaled to reach it. If more than one bone is being constrained
-       * and the parent bone has local nonuniform scale, stretch is not applied. */
-      this.stretch = false;
-      /** A percentage (0-1) that controls the mix between the constrained and unconstrained rotations. */
-      this.mix = 1;
-      /** For two bone IK, the distance from the maximum reach of the bones that rotation will slow. */
-      this.softness = 0;
-      this.active = false;
       if (!data)
         throw new Error("data cannot be null.");
       if (!skeleton)
@@ -6402,8 +6602,9 @@ var spine = (() => {
             q = -(c1 + q) * 0.5;
             let r0 = q / c2, r1 = c / q;
             let r = Math.abs(r0) < Math.abs(r1) ? r0 : r1;
-            if (r * r <= dd) {
-              y = Math.sqrt(dd - r * r) * bendDir;
+            r0 = dd - r * r;
+            if (r0 >= 0) {
+              y = Math.sqrt(r0) * bendDir;
               a1 = ta - Math.atan2(y, r);
               a2 = Math.atan2(y / psy, (r - l1) / psx);
               break outer;
@@ -6458,27 +6659,10 @@ var spine = (() => {
 
   // spine-core/src/IkConstraintData.ts
   var IkConstraintData = class extends ConstraintData {
-    constructor(name) {
-      super(name, 0, false);
-      /** The bones that are constrained by this IK constraint. */
-      this.bones = new Array();
-      /** The bone that is the IK target. */
-      this._target = null;
-      /** Controls the bend direction of the IK bones, either 1 or -1. */
-      this.bendDirection = 0;
-      /** When true and only a single bone is being constrained, if the target is too close, the bone is scaled to reach it. */
-      this.compress = false;
-      /** When true, if the target is out of range, the parent bone is scaled to reach it. If more than one bone is being constrained
-       * and the parent bone has local nonuniform scale, stretch is not applied. */
-      this.stretch = false;
-      /** When true, only a single bone is being constrained, and {@link #getCompress()} or {@link #getStretch()} is used, the bone
-       * is scaled on both the X and Y axes. */
-      this.uniform = false;
-      /** A percentage (0-1) that controls the mix between the constrained and unconstrained rotations. */
-      this.mix = 0;
-      /** For two bone IK, the distance from the maximum reach of the bones that rotation will slow. */
-      this.softness = 0;
-    }
+    /** The bones that are constrained by this IK constraint. */
+    bones = new Array();
+    /** The bone that is the IK target. */
+    _target = null;
     set target(boneData) {
       this._target = boneData;
     }
@@ -6488,32 +6672,31 @@ var spine = (() => {
       else
         return this._target;
     }
+    /** Controls the bend direction of the IK bones, either 1 or -1. */
+    bendDirection = 0;
+    /** When true and only a single bone is being constrained, if the target is too close, the bone is scaled to reach it. */
+    compress = false;
+    /** When true, if the target is out of range, the parent bone is scaled to reach it. If more than one bone is being constrained
+     * and the parent bone has local nonuniform scale, stretch is not applied. */
+    stretch = false;
+    /** When true, only a single bone is being constrained, and {@link #getCompress()} or {@link #getStretch()} is used, the bone
+     * is scaled on both the X and Y axes. */
+    uniform = false;
+    /** A percentage (0-1) that controls the mix between the constrained and unconstrained rotations. */
+    mix = 0;
+    /** For two bone IK, the distance from the maximum reach of the bones that rotation will slow. */
+    softness = 0;
+    constructor(name) {
+      super(name, 0, false);
+    }
   };
 
   // spine-core/src/PathConstraintData.ts
   var PathConstraintData = class extends ConstraintData {
-    constructor(name) {
-      super(name, 0, false);
-      /** The bones that will be modified by this path constraint. */
-      this.bones = new Array();
-      /** The slot whose path attachment will be used to constrained the bones. */
-      this._target = null;
-      /** The mode for positioning the first bone on the path. */
-      this.positionMode = 0 /* Fixed */;
-      /** The mode for positioning the bones after the first bone on the path. */
-      this.spacingMode = 1 /* Fixed */;
-      /** The mode for adjusting the rotation of the bones. */
-      this.rotateMode = 1 /* Chain */;
-      /** An offset added to the constrained bone rotation. */
-      this.offsetRotation = 0;
-      /** The position along the path. */
-      this.position = 0;
-      /** The spacing between bones. */
-      this.spacing = 0;
-      this.mixRotate = 0;
-      this.mixX = 0;
-      this.mixY = 0;
-    }
+    /** The bones that will be modified by this path constraint. */
+    bones = new Array();
+    /** The slot whose path attachment will be used to constrained the bones. */
+    _target = null;
     set target(slotData) {
       this._target = slotData;
     }
@@ -6522,6 +6705,24 @@ var spine = (() => {
         throw new Error("SlotData not set.");
       else
         return this._target;
+    }
+    /** The mode for positioning the first bone on the path. */
+    positionMode = PositionMode.Fixed;
+    /** The mode for positioning the bones after the first bone on the path. */
+    spacingMode = SpacingMode.Fixed;
+    /** The mode for adjusting the rotation of the bones. */
+    rotateMode = RotateMode.Chain;
+    /** An offset added to the constrained bone rotation. */
+    offsetRotation = 0;
+    /** The position along the path. */
+    position = 0;
+    /** The spacing between bones. */
+    spacing = 0;
+    mixRotate = 0;
+    mixX = 0;
+    mixY = 0;
+    constructor(name) {
+      super(name, 0, false);
     }
   };
   var PositionMode = /* @__PURE__ */ ((PositionMode2) => {
@@ -6545,21 +6746,27 @@ var spine = (() => {
 
   // spine-core/src/PathConstraint.ts
   var _PathConstraint = class {
+    /** The path constraint's setup pose data. */
+    data;
+    /** The bones that will be modified by this path constraint. */
+    bones;
+    /** The slot whose path attachment will be used to constrained the bones. */
+    target;
+    /** The position along the path. */
+    position = 0;
+    /** The spacing between bones. */
+    spacing = 0;
+    mixRotate = 0;
+    mixX = 0;
+    mixY = 0;
+    spaces = new Array();
+    positions = new Array();
+    world = new Array();
+    curves = new Array();
+    lengths = new Array();
+    segments = new Array();
+    active = false;
     constructor(data, skeleton) {
-      /** The position along the path. */
-      this.position = 0;
-      /** The spacing between bones. */
-      this.spacing = 0;
-      this.mixRotate = 0;
-      this.mixX = 0;
-      this.mixY = 0;
-      this.spaces = new Array();
-      this.positions = new Array();
-      this.world = new Array();
-      this.curves = new Array();
-      this.lengths = new Array();
-      this.segments = new Array();
-      this.active = false;
       if (!data)
         throw new Error("data cannot be null.");
       if (!skeleton)
@@ -6983,40 +7190,52 @@ var spine = (() => {
     }
   };
   var PathConstraint = _PathConstraint;
-  PathConstraint.NONE = -1;
-  PathConstraint.BEFORE = -2;
-  PathConstraint.AFTER = -3;
-  PathConstraint.epsilon = 1e-5;
+  __publicField(PathConstraint, "NONE", -1);
+  __publicField(PathConstraint, "BEFORE", -2);
+  __publicField(PathConstraint, "AFTER", -3);
+  __publicField(PathConstraint, "epsilon", 1e-5);
 
   // spine-core/src/PhysicsConstraint.ts
   var PhysicsConstraint = class {
+    data;
+    _bone = null;
+    /** The bone constrained by this physics constraint. */
+    set bone(bone) {
+      this._bone = bone;
+    }
+    get bone() {
+      if (!this._bone)
+        throw new Error("Bone not set.");
+      else
+        return this._bone;
+    }
+    inertia = 0;
+    strength = 0;
+    damping = 0;
+    massInverse = 0;
+    wind = 0;
+    gravity = 0;
+    mix = 0;
+    _reset = true;
+    ux = 0;
+    uy = 0;
+    cx = 0;
+    cy = 0;
+    tx = 0;
+    ty = 0;
+    xOffset = 0;
+    xVelocity = 0;
+    yOffset = 0;
+    yVelocity = 0;
+    rotateOffset = 0;
+    rotateVelocity = 0;
+    scaleOffset = 0;
+    scaleVelocity = 0;
+    active = false;
+    skeleton;
+    remaining = 0;
+    lastTime = 0;
     constructor(data, skeleton) {
-      this._bone = null;
-      this.inertia = 0;
-      this.strength = 0;
-      this.damping = 0;
-      this.massInverse = 0;
-      this.wind = 0;
-      this.gravity = 0;
-      this.mix = 0;
-      this._reset = true;
-      this.ux = 0;
-      this.uy = 0;
-      this.cx = 0;
-      this.cy = 0;
-      this.tx = 0;
-      this.ty = 0;
-      this.xOffset = 0;
-      this.xVelocity = 0;
-      this.yOffset = 0;
-      this.yVelocity = 0;
-      this.rotateOffset = 0;
-      this.rotateVelocity = 0;
-      this.scaleOffset = 0;
-      this.scaleVelocity = 0;
-      this.active = false;
-      this.remaining = 0;
-      this.lastTime = 0;
       this.data = data;
       this.skeleton = skeleton;
       this.bone = skeleton.bones[data.bone.index];
@@ -7027,16 +7246,6 @@ var spine = (() => {
       this.wind = data.wind;
       this.gravity = data.gravity;
       this.mix = data.mix;
-    }
-    /** The bone constrained by this physics constraint. */
-    set bone(bone) {
-      this._bone = bone;
-    }
-    get bone() {
-      if (!this._bone)
-        throw new Error("Bone not set.");
-      else
-        return this._bone;
     }
     reset() {
       this.remaining = 0;
@@ -7078,30 +7287,33 @@ var spine = (() => {
         case 1 /* reset */:
           this.reset();
         case 2 /* update */:
+          const skeleton = this.skeleton;
           const delta = Math.max(this.skeleton.time - this.lastTime, 0);
           this.remaining += delta;
-          this.lastTime = this.skeleton.time;
+          this.lastTime = skeleton.time;
           const bx = bone.worldX, by = bone.worldY;
           if (this._reset) {
             this._reset = false;
             this.ux = bx;
             this.uy = by;
           } else {
-            let a = this.remaining, i = this.inertia, q = this.data.limit * delta, t = this.data.step, f = this.skeleton.data.referenceScale, d = -1;
+            let a = this.remaining, i = this.inertia, t = this.data.step, f = this.skeleton.data.referenceScale, d = -1;
+            let qx = this.data.limit * delta, qy = qx * Math.abs(skeleton.scaleY);
+            qx *= Math.abs(skeleton.scaleX);
             if (x || y) {
               if (x) {
                 const u = (this.ux - bx) * i;
-                this.xOffset += u > q ? q : u < -q ? -q : u;
+                this.xOffset += u > qx ? qx : u < -qx ? -qx : u;
                 this.ux = bx;
               }
               if (y) {
                 const u = (this.uy - by) * i;
-                this.yOffset += u > q ? q : u < -q ? -q : u;
+                this.yOffset += u > qy ? qy : u < -qy ? -qy : u;
                 this.uy = by;
               }
               if (a >= t) {
                 d = Math.pow(this.damping, 60 * t);
-                const m = this.massInverse * t, e = this.strength, w = this.wind * f, g = (Skeleton.yDown ? -this.gravity : this.gravity) * f;
+                const m = this.massInverse * t, e = this.strength, w = this.wind * f * skeleton.scaleX, g = this.gravity * f * skeleton.scaleY;
                 do {
                   if (x) {
                     this.xVelocity += (w - this.xOffset * e) * m;
@@ -7124,14 +7336,14 @@ var spine = (() => {
             if (rotateOrShearX || scaleX) {
               let ca = Math.atan2(bone.c, bone.a), c = 0, s = 0, mr = 0;
               let dx = this.cx - bone.worldX, dy = this.cy - bone.worldY;
-              if (dx > q)
-                dx = q;
-              else if (dx < -q)
-                dx = -q;
-              if (dy > q)
-                dy = q;
-              else if (dy < -q)
-                dy = -q;
+              if (dx > qx)
+                dx = qx;
+              else if (dx < -qx)
+                dx = -qx;
+              if (dy > qy)
+                dy = qy;
+              else if (dy < -qy)
+                dy = -qy;
               if (rotateOrShearX) {
                 mr = (this.data.rotate + this.data.shearX) * mix;
                 let r = Math.atan2(dy + this.ty, dx + this.tx) - ca - this.rotateOffset * mr;
@@ -7248,20 +7460,27 @@ var spine = (() => {
 
   // spine-core/src/Slot.ts
   var Slot = class {
+    /** The slot's setup pose data. */
+    data;
+    /** The bone this slot belongs to. */
+    bone;
+    /** The color used to tint the slot's attachment. If {@link #getDarkColor()} is set, this is used as the light color for two
+     * color tinting. */
+    color;
+    /** The dark color used to tint the slot's attachment for two color tinting, or null if two color tinting is not used. The dark
+     * color's alpha is not used. */
+    darkColor = null;
+    attachment = null;
+    attachmentState = 0;
+    /** The index of the texture region to display when the slot's attachment has a {@link Sequence}. -1 represents the
+     * {@link Sequence#getSetupIndex()}. */
+    sequenceIndex = -1;
+    /** Values to deform the slot's attachment. For an unweighted mesh, the entries are local positions for each vertex. For a
+     * weighted mesh, the entries are an offset for each vertex which will be added to the mesh's local vertex positions.
+     *
+     * See {@link VertexAttachment#computeWorldVertices()} and {@link DeformTimeline}. */
+    deform = new Array();
     constructor(data, bone) {
-      /** The dark color used to tint the slot's attachment for two color tinting, or null if two color tinting is not used. The dark
-       * color's alpha is not used. */
-      this.darkColor = null;
-      this.attachment = null;
-      this.attachmentState = 0;
-      /** The index of the texture region to display when the slot's attachment has a {@link Sequence}. -1 represents the
-       * {@link Sequence#getSetupIndex()}. */
-      this.sequenceIndex = -1;
-      /** Values to deform the slot's attachment. For an unweighted mesh, the entries are local positions for each vertex. For a
-       * weighted mesh, the entries are an offset for each vertex which will be added to the mesh's local vertex positions.
-       *
-       * See {@link VertexAttachment#computeWorldVertices()} and {@link DeformTimeline}. */
-      this.deform = new Array();
       if (!data)
         throw new Error("data cannot be null.");
       if (!bone)
@@ -7308,15 +7527,21 @@ var spine = (() => {
 
   // spine-core/src/TransformConstraint.ts
   var TransformConstraint = class {
+    /** The transform constraint's setup pose data. */
+    data;
+    /** The bones that will be modified by this transform constraint. */
+    bones;
+    /** The target bone whose world transform will be copied to the constrained bones. */
+    target;
+    mixRotate = 0;
+    mixX = 0;
+    mixY = 0;
+    mixScaleX = 0;
+    mixScaleY = 0;
+    mixShearY = 0;
+    temp = new Vector2();
+    active = false;
     constructor(data, skeleton) {
-      this.mixRotate = 0;
-      this.mixX = 0;
-      this.mixY = 0;
-      this.mixScaleX = 0;
-      this.mixScaleY = 0;
-      this.mixShearY = 0;
-      this.temp = new Vector2();
-      this.active = false;
       if (!data)
         throw new Error("data cannot be null.");
       if (!skeleton)
@@ -7525,25 +7750,49 @@ var spine = (() => {
 
   // spine-core/src/Skeleton.ts
   var _Skeleton = class {
+    /** The skeleton's setup pose data. */
+    data;
+    /** The skeleton's bones, sorted parent first. The root bone is always the first bone. */
+    bones;
+    /** The skeleton's slots in the setup pose draw order. */
+    slots;
+    /** The skeleton's slots in the order they should be drawn. The returned array may be modified to change the draw order. */
+    drawOrder;
+    /** The skeleton's IK constraints. */
+    ikConstraints;
+    /** The skeleton's transform constraints. */
+    transformConstraints;
+    /** The skeleton's path constraints. */
+    pathConstraints;
+    /** The skeleton's physics constraints. */
+    physicsConstraints;
+    /** The list of bones and constraints, sorted in the order they should be updated, as computed by {@link #updateCache()}. */
+    _updateCache = new Array();
+    /** The skeleton's current skin. May be null. */
+    skin = null;
+    /** The color to tint all the skeleton's attachments. */
+    color;
+    /** Scales the entire skeleton on the X axis. This affects all bones, even if the bone's transform mode disallows scale
+      * inheritance. */
+    scaleX = 1;
+    /** Scales the entire skeleton on the Y axis. This affects all bones, even if the bone's transform mode disallows scale
+      * inheritance. */
+    _scaleY = 1;
+    get scaleY() {
+      return _Skeleton.yDown ? -this._scaleY : this._scaleY;
+    }
+    set scaleY(scaleY) {
+      this._scaleY = scaleY;
+    }
+    /** Sets the skeleton X position, which is added to the root bone worldX position. */
+    x = 0;
+    /** Sets the skeleton Y position, which is added to the root bone worldY position. */
+    y = 0;
+    /** Returns the skeleton's time. This is used for time-based manipulations, such as {@link PhysicsConstraint}.
+     * <p>
+     * See {@link #update(float)}. */
+    time = 0;
     constructor(data) {
-      /** The list of bones and constraints, sorted in the order they should be updated, as computed by {@link #updateCache()}. */
-      this._updateCache = new Array();
-      /** The skeleton's current skin. May be null. */
-      this.skin = null;
-      /** Scales the entire skeleton on the X axis. This affects all bones, even if the bone's transform mode disallows scale
-        * inheritance. */
-      this.scaleX = 1;
-      /** Scales the entire skeleton on the Y axis. This affects all bones, even if the bone's transform mode disallows scale
-        * inheritance. */
-      this._scaleY = 1;
-      /** Sets the skeleton X position, which is added to the root bone worldX position. */
-      this.x = 0;
-      /** Sets the skeleton Y position, which is added to the root bone worldY position. */
-      this.y = 0;
-      /** Returns the skeleton's time. This is used for time-based manipulations, such as {@link PhysicsConstraint}.
-       * <p>
-       * See {@link #update(float)}. */
-      this.time = 0;
       if (!data)
         throw new Error("data cannot be null.");
       this.data = data;
@@ -7591,12 +7840,6 @@ var spine = (() => {
       }
       this.color = new Color(1, 1, 1, 1);
       this.updateCache();
-    }
-    get scaleY() {
-      return _Skeleton.yDown ? -this._scaleY : this._scaleY;
-    }
-    set scaleY(scaleY) {
-      this._scaleY = scaleY;
     }
     /** Caches information about bones and constraints. Must be called if the {@link #getSkin()} is modified or if bones,
      * constraints, or weighted path attachments are added or removed. */
@@ -7808,6 +8051,19 @@ var spine = (() => {
         updateCache[i].update(physics);
     }
     updateWorldTransformWith(physics, parent) {
+      if (!parent)
+        throw new Error("parent cannot be null.");
+      let bones = this.bones;
+      for (let i = 1, n = bones.length; i < n; i++) {
+        let bone = bones[i];
+        bone.ax = bone.x;
+        bone.ay = bone.y;
+        bone.arotation = bone.rotation;
+        bone.ascaleX = bone.scaleX;
+        bone.ascaleY = bone.scaleY;
+        bone.ashearX = bone.shearX;
+        bone.ashearY = bone.shearY;
+      }
       let rootBone = this.getRootBone();
       if (!rootBone)
         throw new Error("Root bone must not be null.");
@@ -7983,43 +8239,39 @@ var spine = (() => {
      * than to call it repeatedly.
      * @return May be null. */
     findIkConstraint(constraintName) {
-      var _a;
       if (!constraintName)
         throw new Error("constraintName cannot be null.");
-      return (_a = this.ikConstraints.find((constraint) => constraint.data.name == constraintName)) != null ? _a : null;
+      return this.ikConstraints.find((constraint) => constraint.data.name == constraintName) ?? null;
     }
     /** Finds a transform constraint by comparing each transform constraint's name. It is more efficient to cache the results of
      * this method than to call it repeatedly.
      * @return May be null. */
     findTransformConstraint(constraintName) {
-      var _a;
       if (!constraintName)
         throw new Error("constraintName cannot be null.");
-      return (_a = this.transformConstraints.find((constraint) => constraint.data.name == constraintName)) != null ? _a : null;
+      return this.transformConstraints.find((constraint) => constraint.data.name == constraintName) ?? null;
     }
     /** Finds a path constraint by comparing each path constraint's name. It is more efficient to cache the results of this method
      * than to call it repeatedly.
      * @return May be null. */
     findPathConstraint(constraintName) {
-      var _a;
       if (!constraintName)
         throw new Error("constraintName cannot be null.");
-      return (_a = this.pathConstraints.find((constraint) => constraint.data.name == constraintName)) != null ? _a : null;
+      return this.pathConstraints.find((constraint) => constraint.data.name == constraintName) ?? null;
     }
     /** Finds a physics constraint by comparing each physics constraint's name. It is more efficient to cache the results of this
      * method than to call it repeatedly. */
     findPhysicsConstraint(constraintName) {
-      var _a;
       if (constraintName == null)
         throw new Error("constraintName cannot be null.");
-      return (_a = this.physicsConstraints.find((constraint) => constraint.data.name == constraintName)) != null ? _a : null;
+      return this.physicsConstraints.find((constraint) => constraint.data.name == constraintName) ?? null;
     }
     /** Returns the axis aligned bounding box (AABB) of the region and mesh attachments for the current pose as `{ x: number, y: number, width: number, height: number }`.
      * Note that this method will create temporary objects which can add to garbage collection pressure. Use `getBounds()` if garbage collection is a concern. */
-    getBoundsRect() {
+    getBoundsRect(clipper) {
       let offset = new Vector2();
       let size = new Vector2();
-      this.getBounds(offset, size);
+      this.getBounds(offset, size, void 0, clipper);
       return { x: offset.x, y: offset.y, width: size.x, height: size.y };
     }
     /** Returns the axis aligned bounding box (AABB) of the region and mesh attachments for the current pose.
@@ -8096,8 +8348,8 @@ var spine = (() => {
     }
   };
   var Skeleton = _Skeleton;
-  Skeleton.quadTriangles = [0, 1, 2, 2, 3, 0];
-  Skeleton.yDown = false;
+  __publicField(Skeleton, "quadTriangles", [0, 1, 2, 2, 3, 0]);
+  __publicField(Skeleton, "yDown", false);
   var Physics = /* @__PURE__ */ ((Physics2) => {
     Physics2[Physics2["none"] = 0] = "none";
     Physics2[Physics2["reset"] = 1] = "reset";
@@ -8108,32 +8360,7 @@ var spine = (() => {
 
   // spine-core/src/PhysicsConstraintData.ts
   var PhysicsConstraintData = class extends ConstraintData {
-    constructor(name) {
-      super(name, 0, false);
-      this._bone = null;
-      this.x = 0;
-      this.y = 0;
-      this.rotate = 0;
-      this.scaleX = 0;
-      this.shearX = 0;
-      this.limit = 0;
-      this.step = 0;
-      this.inertia = 0;
-      this.strength = 0;
-      this.damping = 0;
-      this.massInverse = 0;
-      this.wind = 0;
-      this.gravity = 0;
-      /** A percentage (0-1) that controls the mix between the constrained and unconstrained poses. */
-      this.mix = 0;
-      this.inertiaGlobal = false;
-      this.strengthGlobal = false;
-      this.dampingGlobal = false;
-      this.massGlobal = false;
-      this.windGlobal = false;
-      this.gravityGlobal = false;
-      this.mixGlobal = false;
-    }
+    _bone = null;
     /** The bone constrained by this physics constraint. */
     set bone(boneData) {
       this._bone = boneData;
@@ -8144,60 +8371,83 @@ var spine = (() => {
       else
         return this._bone;
     }
+    x = 0;
+    y = 0;
+    rotate = 0;
+    scaleX = 0;
+    shearX = 0;
+    limit = 0;
+    step = 0;
+    inertia = 0;
+    strength = 0;
+    damping = 0;
+    massInverse = 0;
+    wind = 0;
+    gravity = 0;
+    /** A percentage (0-1) that controls the mix between the constrained and unconstrained poses. */
+    mix = 0;
+    inertiaGlobal = false;
+    strengthGlobal = false;
+    dampingGlobal = false;
+    massGlobal = false;
+    windGlobal = false;
+    gravityGlobal = false;
+    mixGlobal = false;
+    constructor(name) {
+      super(name, 0, false);
+    }
   };
 
   // spine-core/src/SkeletonData.ts
   var SkeletonData = class {
-    constructor() {
-      /** The skeleton's name, which by default is the name of the skeleton data file, if possible. May be null. */
-      this.name = null;
-      /** The skeleton's bones, sorted parent first. The root bone is always the first bone. */
-      this.bones = new Array();
-      // Ordered parents first.
-      /** The skeleton's slots in the setup pose draw order. */
-      this.slots = new Array();
-      // Setup pose draw order.
-      this.skins = new Array();
-      /** The skeleton's default skin. By default this skin contains all attachments that were not in a skin in Spine.
-       *
-       * See {@link Skeleton#getAttachmentByName()}.
-       * May be null. */
-      this.defaultSkin = null;
-      /** The skeleton's events. */
-      this.events = new Array();
-      /** The skeleton's animations. */
-      this.animations = new Array();
-      /** The skeleton's IK constraints. */
-      this.ikConstraints = new Array();
-      /** The skeleton's transform constraints. */
-      this.transformConstraints = new Array();
-      /** The skeleton's path constraints. */
-      this.pathConstraints = new Array();
-      /** The skeleton's physics constraints. */
-      this.physicsConstraints = new Array();
-      /** The X coordinate of the skeleton's axis aligned bounding box in the setup pose. */
-      this.x = 0;
-      /** The Y coordinate of the skeleton's axis aligned bounding box in the setup pose. */
-      this.y = 0;
-      /** The width of the skeleton's axis aligned bounding box in the setup pose. */
-      this.width = 0;
-      /** The height of the skeleton's axis aligned bounding box in the setup pose. */
-      this.height = 0;
-      /** Baseline scale factor for applying distance-dependent effects on non-scalable properties, such as angle or scale. Default
-       * is 100. */
-      this.referenceScale = 100;
-      /** The Spine version used to export the skeleton data, or null. */
-      this.version = null;
-      /** The skeleton data hash. This value will change if any of the skeleton data has changed. May be null. */
-      this.hash = null;
-      // Nonessential
-      /** The dopesheet FPS in Spine. Available only when nonessential data was exported. */
-      this.fps = 0;
-      /** The path to the images directory as defined in Spine. Available only when nonessential data was exported. May be null. */
-      this.imagesPath = null;
-      /** The path to the audio directory as defined in Spine. Available only when nonessential data was exported. May be null. */
-      this.audioPath = null;
-    }
+    /** The skeleton's name, which by default is the name of the skeleton data file, if possible. May be null. */
+    name = null;
+    /** The skeleton's bones, sorted parent first. The root bone is always the first bone. */
+    bones = new Array();
+    // Ordered parents first.
+    /** The skeleton's slots in the setup pose draw order. */
+    slots = new Array();
+    // Setup pose draw order.
+    skins = new Array();
+    /** The skeleton's default skin. By default this skin contains all attachments that were not in a skin in Spine.
+     *
+     * See {@link Skeleton#getAttachmentByName()}.
+     * May be null. */
+    defaultSkin = null;
+    /** The skeleton's events. */
+    events = new Array();
+    /** The skeleton's animations. */
+    animations = new Array();
+    /** The skeleton's IK constraints. */
+    ikConstraints = new Array();
+    /** The skeleton's transform constraints. */
+    transformConstraints = new Array();
+    /** The skeleton's path constraints. */
+    pathConstraints = new Array();
+    /** The skeleton's physics constraints. */
+    physicsConstraints = new Array();
+    /** The X coordinate of the skeleton's axis aligned bounding box in the setup pose. */
+    x = 0;
+    /** The Y coordinate of the skeleton's axis aligned bounding box in the setup pose. */
+    y = 0;
+    /** The width of the skeleton's axis aligned bounding box in the setup pose. */
+    width = 0;
+    /** The height of the skeleton's axis aligned bounding box in the setup pose. */
+    height = 0;
+    /** Baseline scale factor for applying distance-dependent effects on non-scalable properties, such as angle or scale. Default
+     * is 100. */
+    referenceScale = 100;
+    /** The Spine version used to export the skeleton data, or null. */
+    version = null;
+    /** The skeleton data hash. This value will change if any of the skeleton data has changed. May be null. */
+    hash = null;
+    // Nonessential
+    /** The dopesheet FPS in Spine. Available only when nonessential data was exported. */
+    fps = 0;
+    /** The path to the images directory as defined in Spine. Available only when nonessential data was exported. May be null. */
+    imagesPath = null;
+    /** The path to the audio directory as defined in Spine. Available only when nonessential data was exported. May be null. */
+    audioPath = null;
     /** Finds a bone by comparing each bone's name. It is more efficient to cache the results of this method than to call it
      * multiple times.
      * @returns May be null. */
@@ -8335,13 +8585,15 @@ var spine = (() => {
     }
   };
   var Skin = class {
+    /** The skin's name, which is unique across all skins in the skeleton. */
+    name;
+    attachments = new Array();
+    bones = Array();
+    constraints = new Array();
+    /** The color of the skin as it was in Spine, or a default color if nonessential data was not exported. */
+    color = new Color(0.99607843, 0.61960787, 0.30980393, 1);
     // fe9e4fff
     constructor(name) {
-      this.attachments = new Array();
-      this.bones = Array();
-      this.constraints = new Array();
-      /** The color of the skin as it was in Spine, or a default color if nonessential data was not exported. */
-      this.color = new Color(0.99607843, 0.61960787, 0.30980393, 1);
       if (!name)
         throw new Error("name cannot be null.");
       this.name = name;
@@ -8498,21 +8750,25 @@ var spine = (() => {
 
   // spine-core/src/SlotData.ts
   var SlotData = class {
+    /** The index of the slot in {@link Skeleton#getSlots()}. */
+    index = 0;
+    /** The name of the slot, which is unique across all slots in the skeleton. */
+    name;
+    /** The bone this slot belongs to. */
+    boneData;
+    /** The color used to tint the slot's attachment. If {@link #getDarkColor()} is set, this is used as the light color for two
+     * color tinting. */
+    color = new Color(1, 1, 1, 1);
+    /** The dark color used to tint the slot's attachment for two color tinting, or null if two color tinting is not used. The dark
+     * color's alpha is not used. */
+    darkColor = null;
+    /** The name of the attachment that is visible for this slot in the setup pose, or null if no attachment is visible. */
+    attachmentName = null;
+    /** The blend mode for drawing the slot's attachment. */
+    blendMode = BlendMode.Normal;
+    /** False if the slot was hidden in Spine and nonessential data was exported. Does not affect runtime rendering. */
+    visible = true;
     constructor(index, name, boneData) {
-      /** The index of the slot in {@link Skeleton#getSlots()}. */
-      this.index = 0;
-      /** The color used to tint the slot's attachment. If {@link #getDarkColor()} is set, this is used as the light color for two
-       * color tinting. */
-      this.color = new Color(1, 1, 1, 1);
-      /** The dark color used to tint the slot's attachment for two color tinting, or null if two color tinting is not used. The dark
-       * color's alpha is not used. */
-      this.darkColor = null;
-      /** The name of the attachment that is visible for this slot in the setup pose, or null if no attachment is visible. */
-      this.attachmentName = null;
-      /** The blend mode for drawing the slot's attachment. */
-      this.blendMode = 0 /* Normal */;
-      /** False if the slot was hidden in Spine and nonessential data was exported. Does not affect runtime rendering. */
-      this.visible = true;
       if (index < 0)
         throw new Error("index must be >= 0.");
       if (!name)
@@ -8534,33 +8790,10 @@ var spine = (() => {
 
   // spine-core/src/TransformConstraintData.ts
   var TransformConstraintData = class extends ConstraintData {
-    constructor(name) {
-      super(name, 0, false);
-      /** The bones that will be modified by this transform constraint. */
-      this.bones = new Array();
-      /** The target bone whose world transform will be copied to the constrained bones. */
-      this._target = null;
-      this.mixRotate = 0;
-      this.mixX = 0;
-      this.mixY = 0;
-      this.mixScaleX = 0;
-      this.mixScaleY = 0;
-      this.mixShearY = 0;
-      /** An offset added to the constrained bone rotation. */
-      this.offsetRotation = 0;
-      /** An offset added to the constrained bone X translation. */
-      this.offsetX = 0;
-      /** An offset added to the constrained bone Y translation. */
-      this.offsetY = 0;
-      /** An offset added to the constrained bone scaleX. */
-      this.offsetScaleX = 0;
-      /** An offset added to the constrained bone scaleY. */
-      this.offsetScaleY = 0;
-      /** An offset added to the constrained bone shearY. */
-      this.offsetShearY = 0;
-      this.relative = false;
-      this.local = false;
-    }
+    /** The bones that will be modified by this transform constraint. */
+    bones = new Array();
+    /** The target bone whose world transform will be copied to the constrained bones. */
+    _target = null;
     set target(boneData) {
       this._target = boneData;
     }
@@ -8570,21 +8803,44 @@ var spine = (() => {
       else
         return this._target;
     }
+    mixRotate = 0;
+    mixX = 0;
+    mixY = 0;
+    mixScaleX = 0;
+    mixScaleY = 0;
+    mixShearY = 0;
+    /** An offset added to the constrained bone rotation. */
+    offsetRotation = 0;
+    /** An offset added to the constrained bone X translation. */
+    offsetX = 0;
+    /** An offset added to the constrained bone Y translation. */
+    offsetY = 0;
+    /** An offset added to the constrained bone scaleX. */
+    offsetScaleX = 0;
+    /** An offset added to the constrained bone scaleY. */
+    offsetScaleY = 0;
+    /** An offset added to the constrained bone shearY. */
+    offsetShearY = 0;
+    relative = false;
+    local = false;
+    constructor(name) {
+      super(name, 0, false);
+    }
   };
 
   // spine-core/src/SkeletonBinary.ts
   var SkeletonBinary = class {
+    /** Scales bone positions, image sizes, and translations as they are loaded. This allows different size images to be used at
+     * runtime than were used in Spine.
+     *
+     * See [Scaling](http://esotericsoftware.com/spine-loading-skeleton-data#Scaling) in the Spine Runtimes Guide. */
+    scale = 1;
+    attachmentLoader;
+    linkedMeshes = new Array();
     constructor(attachmentLoader) {
-      /** Scales bone positions, image sizes, and translations as they are loaded. This allows different size images to be used at
-       * runtime than were used in Spine.
-       *
-       * See [Scaling](http://esotericsoftware.com/spine-loading-skeleton-data#Scaling) in the Spine Runtimes Guide. */
-      this.scale = 1;
-      this.linkedMeshes = new Array();
       this.attachmentLoader = attachmentLoader;
     }
     readSkeletonData(binary) {
-      var _a;
       let scale = this.scale;
       let skeletonData = new SkeletonData();
       skeletonData.name = "";
@@ -8631,7 +8887,7 @@ var spine = (() => {
         data.skinRequired = input.readBoolean();
         if (nonessential) {
           Color.rgba8888ToColor(data.color, input.readInt32());
-          data.icon = (_a = input.readString()) != null ? _a : void 0;
+          data.icon = input.readString() ?? void 0;
           data.visible = input.readBoolean();
         }
         skeletonData.bones.push(data);
@@ -8896,7 +9152,7 @@ var spine = (() => {
       if (!name)
         throw new Error("Attachment name must not be null");
       switch (flags & 7) {
-        case 0 /* Region */: {
+        case AttachmentType.Region: {
           let path = (flags & 16) != 0 ? input.readStringRef() : null;
           const color = (flags & 32) != 0 ? input.readInt32() : 4294967295;
           const sequence = (flags & 64) != 0 ? this.readSequence(input) : null;
@@ -8926,7 +9182,7 @@ var spine = (() => {
             region.updateRegion();
           return region;
         }
-        case 1 /* BoundingBox */: {
+        case AttachmentType.BoundingBox: {
           let vertices = this.readVertices(input, (flags & 16) != 0);
           let color = nonessential ? input.readInt32() : 0;
           let box = this.attachmentLoader.newBoundingBoxAttachment(skin, name);
@@ -8939,7 +9195,7 @@ var spine = (() => {
             Color.rgba8888ToColor(box.color, color);
           return box;
         }
-        case 2 /* Mesh */: {
+        case AttachmentType.Mesh: {
           let path = (flags & 16) != 0 ? input.readStringRef() : name;
           const color = (flags & 32) != 0 ? input.readInt32() : 4294967295;
           const sequence = (flags & 64) != 0 ? this.readSequence(input) : null;
@@ -8977,7 +9233,7 @@ var spine = (() => {
           }
           return mesh;
         }
-        case 3 /* LinkedMesh */: {
+        case AttachmentType.LinkedMesh: {
           const path = (flags & 16) != 0 ? input.readStringRef() : name;
           if (path == null)
             throw new Error("Path of linked mesh must not be null");
@@ -9004,7 +9260,7 @@ var spine = (() => {
           this.linkedMeshes.push(new LinkedMesh(mesh, skinIndex, slotIndex, parent, inheritTimelines));
           return mesh;
         }
-        case 4 /* Path */: {
+        case AttachmentType.Path: {
           const closed2 = (flags & 16) != 0;
           const constantSpeed = (flags & 32) != 0;
           const vertices = this.readVertices(input, (flags & 64) != 0);
@@ -9025,7 +9281,7 @@ var spine = (() => {
             Color.rgba8888ToColor(path.color, color);
           return path;
         }
-        case 5 /* Point */: {
+        case AttachmentType.Point: {
           const rotation = input.readFloat();
           const x = input.readFloat();
           const y = input.readFloat();
@@ -9040,7 +9296,7 @@ var spine = (() => {
             Color.rgba8888ToColor(point.color, color);
           return point;
         }
-        case 6 /* Clipping */: {
+        case AttachmentType.Clipping: {
           const endSlotIndex = input.readInt(true);
           const vertices = this.readVertices(input, (flags & 16) != 0);
           let color = nonessential ? input.readInt32() : 0;
@@ -9625,7 +9881,7 @@ var spine = (() => {
     }
   };
   var BinaryInput = class {
-    constructor(data, strings = new Array(), index = 0, buffer = new DataView(data.buffer)) {
+    constructor(data, strings = new Array(), index = 0, buffer = new DataView(data instanceof ArrayBuffer ? data : data.buffer)) {
       this.strings = strings;
       this.index = index;
       this.buffer = buffer;
@@ -9711,6 +9967,11 @@ var spine = (() => {
     }
   };
   var LinkedMesh = class {
+    parent;
+    skinIndex;
+    slotIndex;
+    mesh;
+    inheritTimeline;
     constructor(mesh, skinIndex, slotIndex, parent, inheritDeform) {
       this.mesh = mesh;
       this.skinIndex = skinIndex;
@@ -9726,6 +9987,16 @@ var spine = (() => {
       this.length = length;
     }
   };
+  var AttachmentType = /* @__PURE__ */ ((AttachmentType2) => {
+    AttachmentType2[AttachmentType2["Region"] = 0] = "Region";
+    AttachmentType2[AttachmentType2["BoundingBox"] = 1] = "BoundingBox";
+    AttachmentType2[AttachmentType2["Mesh"] = 2] = "Mesh";
+    AttachmentType2[AttachmentType2["LinkedMesh"] = 3] = "LinkedMesh";
+    AttachmentType2[AttachmentType2["Path"] = 4] = "Path";
+    AttachmentType2[AttachmentType2["Point"] = 5] = "Point";
+    AttachmentType2[AttachmentType2["Clipping"] = 6] = "Clipping";
+    return AttachmentType2;
+  })(AttachmentType || {});
   function readTimeline1(input, timeline, scale) {
     let time = input.readFloat(), value = input.readFloat() * scale;
     for (let frame = 0, bezier = 0, frameLast = timeline.getFrameCount() - 1; ; frame++) {
@@ -9804,23 +10075,21 @@ var spine = (() => {
 
   // spine-core/src/SkeletonBounds.ts
   var SkeletonBounds = class {
-    constructor() {
-      /** The left edge of the axis aligned bounding box. */
-      this.minX = 0;
-      /** The bottom edge of the axis aligned bounding box. */
-      this.minY = 0;
-      /** The right edge of the axis aligned bounding box. */
-      this.maxX = 0;
-      /** The top edge of the axis aligned bounding box. */
-      this.maxY = 0;
-      /** The visible bounding boxes. */
-      this.boundingBoxes = new Array();
-      /** The world vertices for the bounding box polygons. */
-      this.polygons = new Array();
-      this.polygonPool = new Pool(() => {
-        return Utils.newFloatArray(16);
-      });
-    }
+    /** The left edge of the axis aligned bounding box. */
+    minX = 0;
+    /** The bottom edge of the axis aligned bounding box. */
+    minY = 0;
+    /** The right edge of the axis aligned bounding box. */
+    maxX = 0;
+    /** The top edge of the axis aligned bounding box. */
+    maxY = 0;
+    /** The visible bounding boxes. */
+    boundingBoxes = new Array();
+    /** The world vertices for the bounding box polygons. */
+    polygons = new Array();
+    polygonPool = new Pool(() => {
+      return Utils.newFloatArray(16);
+    });
     /** Clears any previous polygons, finds all visible bounding box attachments, and computes the world vertices for each bounding
      * box's polygon.
      * @param updateAabb If true, the axis aligned bounding box containing all the polygons is computed. If false, the
@@ -9991,19 +10260,17 @@ var spine = (() => {
 
   // spine-core/src/Triangulator.ts
   var Triangulator = class {
-    constructor() {
-      this.convexPolygons = new Array();
-      this.convexPolygonsIndices = new Array();
-      this.indicesArray = new Array();
-      this.isConcaveArray = new Array();
-      this.triangles = new Array();
-      this.polygonPool = new Pool(() => {
-        return new Array();
-      });
-      this.polygonIndicesPool = new Pool(() => {
-        return new Array();
-      });
-    }
+    convexPolygons = new Array();
+    convexPolygonsIndices = new Array();
+    indicesArray = new Array();
+    isConcaveArray = new Array();
+    triangles = new Array();
+    polygonPool = new Pool(() => {
+      return new Array();
+    });
+    polygonIndicesPool = new Pool(() => {
+      return new Array();
+    });
     triangulate(verticesArray) {
       let vertices = verticesArray;
       let vertexCount = verticesArray.length >> 1;
@@ -10207,16 +10474,15 @@ var spine = (() => {
 
   // spine-core/src/SkeletonClipping.ts
   var SkeletonClipping = class {
-    constructor() {
-      this.triangulator = new Triangulator();
-      this.clippingPolygon = new Array();
-      this.clipOutput = new Array();
-      this.clippedVertices = new Array();
-      this.clippedTriangles = new Array();
-      this.scratch = new Array();
-      this.clipAttachment = null;
-      this.clippingPolygons = null;
-    }
+    triangulator = new Triangulator();
+    clippingPolygon = new Array();
+    clipOutput = new Array();
+    clippedVertices = new Array();
+    clippedUVs = new Array();
+    clippedTriangles = new Array();
+    scratch = new Array();
+    clipAttachment = null;
+    clippingPolygons = null;
     clipStart(slot, clip) {
       if (this.clipAttachment)
         return 0;
@@ -10251,7 +10517,28 @@ var spine = (() => {
     isClipping() {
       return this.clipAttachment != null;
     }
-    clipTriangles(vertices, triangles, trianglesLength, uvs, light, dark, twoColor) {
+    clipTriangles(vertices, verticesLengthOrTriangles, trianglesOrTrianglesLength, trianglesLengthOrUvs, uvsOrLight, lightOrDark, darkOrTwoColor, twoColorParam) {
+      let triangles;
+      let trianglesLength;
+      let uvs;
+      let light;
+      let dark;
+      let twoColor;
+      if (typeof verticesLengthOrTriangles === "number") {
+        triangles = trianglesOrTrianglesLength;
+        trianglesLength = trianglesLengthOrUvs;
+        uvs = uvsOrLight;
+        light = lightOrDark;
+        dark = darkOrTwoColor;
+        twoColor = twoColorParam;
+      } else {
+        triangles = verticesLengthOrTriangles;
+        trianglesLength = trianglesOrTrianglesLength;
+        uvs = trianglesLengthOrUvs;
+        light = uvsOrLight;
+        dark = lightOrDark;
+        twoColor = darkOrTwoColor;
+      }
       if (uvs && light && dark && typeof twoColor === "boolean")
         this.clipTrianglesRender(vertices, triangles, trianglesLength, uvs, light, dark, twoColor);
       else
@@ -10444,6 +10731,83 @@ var spine = (() => {
         }
       }
     }
+    clipTrianglesUnpacked(vertices, triangles, trianglesLength, uvs) {
+      let clipOutput = this.clipOutput, clippedVertices = this.clippedVertices, clippedUVs = this.clippedUVs;
+      let clippedTriangles = this.clippedTriangles;
+      let polygons = this.clippingPolygons;
+      let polygonsCount = polygons.length;
+      let index = 0;
+      clippedVertices.length = 0;
+      clippedUVs.length = 0;
+      clippedTriangles.length = 0;
+      for (let i = 0; i < trianglesLength; i += 3) {
+        let vertexOffset = triangles[i] << 1;
+        let x1 = vertices[vertexOffset], y1 = vertices[vertexOffset + 1];
+        let u1 = uvs[vertexOffset], v1 = uvs[vertexOffset + 1];
+        vertexOffset = triangles[i + 1] << 1;
+        let x2 = vertices[vertexOffset], y2 = vertices[vertexOffset + 1];
+        let u2 = uvs[vertexOffset], v2 = uvs[vertexOffset + 1];
+        vertexOffset = triangles[i + 2] << 1;
+        let x3 = vertices[vertexOffset], y3 = vertices[vertexOffset + 1];
+        let u3 = uvs[vertexOffset], v3 = uvs[vertexOffset + 1];
+        for (let p = 0; p < polygonsCount; p++) {
+          let s = clippedVertices.length;
+          if (this.clip(x1, y1, x2, y2, x3, y3, polygons[p], clipOutput)) {
+            let clipOutputLength = clipOutput.length;
+            if (clipOutputLength == 0)
+              continue;
+            let d0 = y2 - y3, d1 = x3 - x2, d2 = x1 - x3, d4 = y3 - y1;
+            let d = 1 / (d0 * d2 + d1 * (y1 - y3));
+            let clipOutputCount = clipOutputLength >> 1;
+            let clipOutputItems = this.clipOutput;
+            let clippedVerticesItems = Utils.setArraySize(clippedVertices, s + clipOutputCount * 2);
+            let clippedUVsItems = Utils.setArraySize(clippedUVs, s + clipOutputCount * 2);
+            for (let ii = 0; ii < clipOutputLength; ii += 2, s += 2) {
+              let x = clipOutputItems[ii], y = clipOutputItems[ii + 1];
+              clippedVerticesItems[s] = x;
+              clippedVerticesItems[s + 1] = y;
+              let c0 = x - x3, c1 = y - y3;
+              let a = (d0 * c0 + d1 * c1) * d;
+              let b = (d4 * c0 + d2 * c1) * d;
+              let c = 1 - a - b;
+              clippedUVsItems[s] = u1 * a + u2 * b + u3 * c;
+              clippedUVsItems[s + 1] = v1 * a + v2 * b + v3 * c;
+            }
+            s = clippedTriangles.length;
+            let clippedTrianglesItems = Utils.setArraySize(clippedTriangles, s + 3 * (clipOutputCount - 2));
+            clipOutputCount--;
+            for (let ii = 1; ii < clipOutputCount; ii++, s += 3) {
+              clippedTrianglesItems[s] = index;
+              clippedTrianglesItems[s + 1] = index + ii;
+              clippedTrianglesItems[s + 2] = index + ii + 1;
+            }
+            index += clipOutputCount + 1;
+          } else {
+            let clippedVerticesItems = Utils.setArraySize(clippedVertices, s + 3 * 2);
+            clippedVerticesItems[s] = x1;
+            clippedVerticesItems[s + 1] = y1;
+            clippedVerticesItems[s + 2] = x2;
+            clippedVerticesItems[s + 3] = y2;
+            clippedVerticesItems[s + 4] = x3;
+            clippedVerticesItems[s + 5] = y3;
+            let clippedUVSItems = Utils.setArraySize(clippedUVs, s + 3 * 2);
+            clippedUVSItems[s] = u1;
+            clippedUVSItems[s + 1] = v1;
+            clippedUVSItems[s + 2] = u2;
+            clippedUVSItems[s + 3] = v2;
+            clippedUVSItems[s + 4] = u3;
+            clippedUVSItems[s + 5] = v3;
+            s = clippedTriangles.length;
+            let clippedTrianglesItems = Utils.setArraySize(clippedTriangles, s + 3);
+            clippedTrianglesItems[s] = index;
+            clippedTrianglesItems[s + 1] = index + 1;
+            clippedTrianglesItems[s + 2] = index + 2;
+            index += 3;
+            break;
+          }
+        }
+      }
+    }
     /** Clips the input triangle against the convex, clockwise clipping area. If the triangle lies entirely within the clipping
      * area, false is returned. The clipping area must duplicate the first vertex at the end of the vertices list. */
     clip(x1, y1, x2, y2, x3, y3, clippingArea, output) {
@@ -10555,17 +10919,17 @@ var spine = (() => {
 
   // spine-core/src/SkeletonJson.ts
   var SkeletonJson = class {
+    attachmentLoader;
+    /** Scales bone positions, image sizes, and translations as they are loaded. This allows different size images to be used at
+     * runtime than were used in Spine.
+     *
+     * See [Scaling](http://esotericsoftware.com/spine-loading-skeleton-data#Scaling) in the Spine Runtimes Guide. */
+    scale = 1;
+    linkedMeshes = new Array();
     constructor(attachmentLoader) {
-      /** Scales bone positions, image sizes, and translations as they are loaded. This allows different size images to be used at
-       * runtime than were used in Spine.
-       *
-       * See [Scaling](http://esotericsoftware.com/spine-loading-skeleton-data#Scaling) in the Spine Runtimes Guide. */
-      this.scale = 1;
-      this.linkedMeshes = new Array();
       this.attachmentLoader = attachmentLoader;
     }
     readSkeletonData(json) {
-      var _a, _b;
       let scale = this.scale;
       let skeletonData = new SkeletonData();
       let root = typeof json === "string" ? JSON.parse(json) : json;
@@ -10579,8 +10943,8 @@ var spine = (() => {
         skeletonData.height = skeletonMap.height;
         skeletonData.referenceScale = getValue(skeletonMap, "referenceScale", 100) * scale;
         skeletonData.fps = skeletonMap.fps;
-        skeletonData.imagesPath = (_a = skeletonMap.images) != null ? _a : null;
-        skeletonData.audioPath = (_b = skeletonMap.audio) != null ? _b : null;
+        skeletonData.imagesPath = skeletonMap.images ?? null;
+        skeletonData.audioPath = skeletonMap.audio ?? null;
       }
       if (root.bones) {
         for (let i = 0; i < root.bones.length; i++) {
@@ -11523,6 +11887,11 @@ var spine = (() => {
     }
   };
   var LinkedMesh2 = class {
+    parent;
+    skin;
+    slotIndex;
+    mesh;
+    inheritTimeline;
     constructor(mesh, skin, slotIndex, parent, inheritDeform) {
       this.mesh = mesh;
       this.skin = skin;
@@ -11609,8 +11978,10 @@ var spine = (() => {
 
   // spine-webgl/src/WebGL.ts
   var ManagedWebGLRenderingContext = class {
+    canvas;
+    gl;
+    restorables = new Array();
     constructor(canvasOrContext, contextConfig = { alpha: "true" }) {
-      this.restorables = new Array();
       if (!(canvasOrContext instanceof WebGLRenderingContext || typeof WebGL2RenderingContext !== "undefined" && canvasOrContext instanceof WebGL2RenderingContext)) {
         let canvas = canvasOrContext;
         this.gl = canvas.getContext("webgl2", contextConfig) || canvas.getContext("webgl", contextConfig);
@@ -11641,11 +12012,12 @@ var spine = (() => {
 
   // spine-webgl/src/GLTexture.ts
   var _GLTexture = class extends Texture {
+    context;
+    texture = null;
+    boundUnit = 0;
+    useMipMaps = false;
     constructor(context, image, useMipMaps = false) {
       super(image);
-      this.texture = null;
-      this.boundUnit = 0;
-      this.useMipMaps = false;
       this.context = context instanceof ManagedWebGLRenderingContext ? context : new ManagedWebGLRenderingContext(context);
       this.useMipMaps = useMipMaps;
       this.restore();
@@ -11725,7 +12097,7 @@ var spine = (() => {
     }
   };
   var GLTexture = _GLTexture;
-  GLTexture.DISABLE_UNPACK_PREMULTIPLIED_ALPHA_WEBGL = false;
+  __publicField(GLTexture, "DISABLE_UNPACK_PREMULTIPLIED_ALPHA_WEBGL", false);
 
   // spine-webgl/src/AssetManager.ts
   var AssetManager = class extends AssetManagerBase {
@@ -11738,10 +12110,10 @@ var spine = (() => {
 
   // spine-webgl/src/Vector3.ts
   var Vector3 = class {
+    x = 0;
+    y = 0;
+    z = 0;
     constructor(x = 0, y = 0, z = 0) {
-      this.x = 0;
-      this.y = 0;
-      this.z = 0;
       this.x = x;
       this.y = y;
       this.z = z;
@@ -11838,9 +12210,9 @@ var spine = (() => {
   var M32 = 11;
   var M33 = 15;
   var _Matrix4 = class {
+    temp = new Float32Array(16);
+    values = new Float32Array(16);
     constructor() {
-      this.temp = new Float32Array(16);
-      this.values = new Float32Array(16);
       let v = this.values;
       v[M00] = 1;
       v[M11] = 1;
@@ -12071,26 +12443,26 @@ var spine = (() => {
     }
   };
   var Matrix42 = _Matrix4;
-  Matrix42.xAxis = new Vector3();
-  Matrix42.yAxis = new Vector3();
-  Matrix42.zAxis = new Vector3();
-  Matrix42.tmpMatrix = new _Matrix4();
+  __publicField(Matrix42, "xAxis", new Vector3());
+  __publicField(Matrix42, "yAxis", new Vector3());
+  __publicField(Matrix42, "zAxis", new Vector3());
+  __publicField(Matrix42, "tmpMatrix", new _Matrix4());
 
   // spine-webgl/src/Camera.ts
   var OrthoCamera = class {
+    position = new Vector3(0, 0, 0);
+    direction = new Vector3(0, 0, -1);
+    up = new Vector3(0, 1, 0);
+    near = 0;
+    far = 100;
+    zoom = 1;
+    viewportWidth = 0;
+    viewportHeight = 0;
+    projectionView = new Matrix42();
+    inverseProjectionView = new Matrix42();
+    projection = new Matrix42();
+    view = new Matrix42();
     constructor(viewportWidth, viewportHeight) {
-      this.position = new Vector3(0, 0, 0);
-      this.direction = new Vector3(0, 0, -1);
-      this.up = new Vector3(0, 1, 0);
-      this.near = 0;
-      this.far = 100;
-      this.zoom = 1;
-      this.viewportWidth = 0;
-      this.viewportHeight = 0;
-      this.projectionView = new Matrix42();
-      this.inverseProjectionView = new Matrix42();
-      this.projection = new Matrix42();
-      this.view = new Matrix42();
       this.viewportWidth = viewportWidth;
       this.viewportHeight = viewportHeight;
       this.update();
@@ -12137,53 +12509,55 @@ var spine = (() => {
 
   // spine-webgl/src/Input.ts
   var Input = class {
-    constructor(element) {
-      this.mouseX = 0;
-      this.mouseY = 0;
-      this.buttonDown = false;
-      this.touch0 = null;
-      this.touch1 = null;
-      this.initialPinchDistance = 0;
-      this.listeners = new Array();
-      this.eventListeners = [];
+    element;
+    mouseX = 0;
+    mouseY = 0;
+    buttonDown = false;
+    touch0 = null;
+    touch1 = null;
+    initialPinchDistance = 0;
+    listeners = new Array();
+    autoPreventDefault;
+    // this is needed because browsers sends mousedown-mousemove-mousesup after a touch sequence, unless touch end preventDefault
+    // but preventing default will result in preventing interaction with the page.
+    isTouch = false;
+    callbacks;
+    constructor(element, autoPreventDefault = true) {
       this.element = element;
-      this.setupCallbacks(element);
+      this.autoPreventDefault = autoPreventDefault;
+      this.callbacks = this.setupCallbacks(element);
     }
     setupCallbacks(element) {
-      let mouseDown = (ev) => {
-        if (ev instanceof MouseEvent) {
+      const mouseDown = (ev) => {
+        if (ev instanceof MouseEvent && !this.isTouch) {
           let rect = element.getBoundingClientRect();
           this.mouseX = ev.clientX - rect.left;
-          ;
           this.mouseY = ev.clientY - rect.top;
           this.buttonDown = true;
           this.listeners.map((listener) => {
             if (listener.down)
-              listener.down(this.mouseX, this.mouseY);
+              listener.down(this.mouseX, this.mouseY, ev);
           });
-          document.addEventListener("mousemove", mouseMove);
-          document.addEventListener("mouseup", mouseUp);
         }
       };
-      let mouseMove = (ev) => {
-        if (ev instanceof MouseEvent) {
+      const mouseMove = (ev) => {
+        if (ev instanceof MouseEvent && !this.isTouch) {
           let rect = element.getBoundingClientRect();
           this.mouseX = ev.clientX - rect.left;
-          ;
           this.mouseY = ev.clientY - rect.top;
           this.listeners.map((listener) => {
             if (this.buttonDown) {
               if (listener.dragged)
-                listener.dragged(this.mouseX, this.mouseY);
+                listener.dragged(this.mouseX, this.mouseY, ev);
             } else {
               if (listener.moved)
-                listener.moved(this.mouseX, this.mouseY);
+                listener.moved(this.mouseX, this.mouseY, ev);
             }
           });
         }
       };
-      let mouseUp = (ev) => {
-        if (ev instanceof MouseEvent) {
+      const mouseUp = (ev) => {
+        if (ev instanceof MouseEvent && !this.isTouch) {
           let rect = element.getBoundingClientRect();
           this.mouseX = ev.clientX - rect.left;
           ;
@@ -12191,29 +12565,25 @@ var spine = (() => {
           this.buttonDown = false;
           this.listeners.map((listener) => {
             if (listener.up)
-              listener.up(this.mouseX, this.mouseY);
+              listener.up(this.mouseX, this.mouseY, ev);
           });
-          document.removeEventListener("mousemove", mouseMove);
-          document.removeEventListener("mouseup", mouseUp);
         }
       };
-      let mouseWheel = (e) => {
-        e.preventDefault();
-        let deltaY = e.deltaY;
-        if (e.deltaMode == WheelEvent.DOM_DELTA_LINE)
+      const mouseWheel = (ev) => {
+        if (this.autoPreventDefault)
+          ev.preventDefault();
+        let deltaY = ev.deltaY;
+        if (ev.deltaMode == WheelEvent.DOM_DELTA_LINE)
           deltaY *= 8;
-        if (e.deltaMode == WheelEvent.DOM_DELTA_PAGE)
+        if (ev.deltaMode == WheelEvent.DOM_DELTA_PAGE)
           deltaY *= 24;
         this.listeners.map((listener) => {
           if (listener.wheel)
-            listener.wheel(e.deltaY);
+            listener.wheel(ev.deltaY, ev);
         });
       };
-      element.addEventListener("mousedown", mouseDown, true);
-      element.addEventListener("mousemove", mouseMove, true);
-      element.addEventListener("mouseup", mouseUp, true);
-      element.addEventListener("wheel", mouseWheel, true);
-      element.addEventListener("touchstart", (ev) => {
+      const touchStart = (ev) => {
+        this.isTouch = true;
         if (!this.touch0 || !this.touch1) {
           var touches = ev.changedTouches;
           let nativeTouch = touches.item(0);
@@ -12230,7 +12600,7 @@ var spine = (() => {
             this.touch0 = touch;
             this.listeners.map((listener) => {
               if (listener.down)
-                listener.down(touch.x, touch.y);
+                listener.down(touch.x, touch.y, ev);
             });
           } else if (!this.touch1) {
             this.touch1 = touch;
@@ -12239,13 +12609,15 @@ var spine = (() => {
             this.initialPinchDistance = Math.sqrt(dx * dx + dy * dy);
             this.listeners.map((listener) => {
               if (listener.zoom)
-                listener.zoom(this.initialPinchDistance, this.initialPinchDistance);
+                listener.zoom(this.initialPinchDistance, this.initialPinchDistance, ev);
             });
           }
         }
-        ev.preventDefault();
-      }, false);
-      element.addEventListener("touchmove", (ev) => {
+        if (this.autoPreventDefault)
+          ev.preventDefault();
+      };
+      const touchMove = (ev) => {
+        this.isTouch = true;
         if (this.touch0) {
           var touches = ev.changedTouches;
           let rect = element.getBoundingClientRect();
@@ -12258,7 +12630,7 @@ var spine = (() => {
               this.touch0.y = this.mouseY = y;
               this.listeners.map((listener) => {
                 if (listener.dragged)
-                  listener.dragged(x, y);
+                  listener.dragged(x, y, ev);
               });
             }
             if (this.touch1 && this.touch1.identifier === nativeTouch.identifier) {
@@ -12272,13 +12644,15 @@ var spine = (() => {
             let distance = Math.sqrt(dx * dx + dy * dy);
             this.listeners.map((listener) => {
               if (listener.zoom)
-                listener.zoom(this.initialPinchDistance, distance);
+                listener.zoom(this.initialPinchDistance, distance, ev);
             });
           }
         }
-        ev.preventDefault();
-      }, false);
-      let touchEnd = (ev) => {
+        if (this.autoPreventDefault)
+          ev.preventDefault();
+      };
+      const touchEnd = (ev) => {
+        this.isTouch = true;
         if (this.touch0) {
           var touches = ev.changedTouches;
           let rect = element.getBoundingClientRect();
@@ -12292,7 +12666,7 @@ var spine = (() => {
               this.mouseY = y;
               this.listeners.map((listener) => {
                 if (listener.up)
-                  listener.up(x, y);
+                  listener.up(x, y, ev);
               });
               if (!this.touch1) {
                 this.buttonDown = false;
@@ -12305,7 +12679,7 @@ var spine = (() => {
                 this.buttonDown = true;
                 this.listeners.map((listener) => {
                   if (listener.down)
-                    listener.down(this.touch0.x, this.touch0.y);
+                    listener.down(this.touch0.x, this.touch0.y, ev);
                 });
               }
             }
@@ -12314,10 +12688,38 @@ var spine = (() => {
             }
           }
         }
-        ev.preventDefault();
+        if (this.autoPreventDefault)
+          ev.preventDefault();
       };
-      element.addEventListener("touchend", touchEnd, false);
+      element.addEventListener("mousedown", mouseDown, true);
+      element.addEventListener("mousemove", mouseMove, true);
+      element.addEventListener("mouseup", mouseUp, true);
+      element.addEventListener("wheel", mouseWheel, true);
+      element.addEventListener("touchstart", touchStart, { passive: false, capture: false });
+      element.addEventListener("touchmove", touchMove, { passive: false, capture: false });
+      element.addEventListener("touchend", touchEnd, { passive: false, capture: false });
       element.addEventListener("touchcancel", touchEnd);
+      return {
+        mouseDown,
+        mouseMove,
+        mouseUp,
+        mouseWheel,
+        touchStart,
+        touchMove,
+        touchEnd
+      };
+    }
+    dispose() {
+      const element = this.element;
+      element.removeEventListener("mousedown", this.callbacks.mouseDown, true);
+      element.removeEventListener("mousemove", this.callbacks.mouseMove, true);
+      element.removeEventListener("mouseup", this.callbacks.mouseUp, true);
+      element.removeEventListener("wheel", this.callbacks.mouseWheel, true);
+      element.removeEventListener("touchstart", this.callbacks.touchStart, { capture: false });
+      element.removeEventListener("touchmove", this.callbacks.touchMove, { capture: false });
+      element.removeEventListener("touchend", this.callbacks.touchEnd, { capture: false });
+      element.removeEventListener("touchcancel", this.callbacks.touchEnd);
+      this.listeners.length = 0;
     }
     addListener(listener) {
       this.listeners.push(listener);
@@ -12408,18 +12810,21 @@ var spine = (() => {
     constructor(context, vertexShader, fragmentShader) {
       this.vertexShader = vertexShader;
       this.fragmentShader = fragmentShader;
-      this.vs = null;
-      this.fs = null;
-      this.program = null;
-      this.tmp2x2 = new Float32Array(2 * 2);
-      this.tmp3x3 = new Float32Array(3 * 3);
-      this.tmp4x4 = new Float32Array(4 * 4);
       this.vsSource = vertexShader;
       this.fsSource = fragmentShader;
       this.context = context instanceof ManagedWebGLRenderingContext ? context : new ManagedWebGLRenderingContext(context);
       this.context.addRestorable(this);
       this.compile();
     }
+    context;
+    vs = null;
+    vsSource;
+    fs = null;
+    fsSource;
+    program = null;
+    tmp2x2 = new Float32Array(2 * 2);
+    tmp3x3 = new Float32Array(3 * 3);
+    tmp4x4 = new Float32Array(4 * 4);
     getProgram() {
       return this.program;
     }
@@ -12653,24 +13058,17 @@ void main () {
     }
   };
   var Shader = _Shader;
-  Shader.MVP_MATRIX = "u_projTrans";
-  Shader.POSITION = "a_position";
-  Shader.COLOR = "a_color";
-  Shader.COLOR2 = "a_color2";
-  Shader.TEXCOORDS = "a_texCoords";
-  Shader.SAMPLER = "u_texture";
+  __publicField(Shader, "MVP_MATRIX", "u_projTrans");
+  __publicField(Shader, "POSITION", "a_position");
+  __publicField(Shader, "COLOR", "a_color");
+  __publicField(Shader, "COLOR2", "a_color2");
+  __publicField(Shader, "TEXCOORDS", "a_texCoords");
+  __publicField(Shader, "SAMPLER", "u_texture");
 
   // spine-webgl/src/Mesh.ts
   var Mesh = class {
     constructor(context, attributes, maxVertices, maxIndices) {
       this.attributes = attributes;
-      this.verticesBuffer = null;
-      this.verticesLength = 0;
-      this.dirtyVertices = false;
-      this.indicesBuffer = null;
-      this.indicesLength = 0;
-      this.dirtyIndices = false;
-      this.elementsPerVertex = 0;
       this.context = context instanceof ManagedWebGLRenderingContext ? context : new ManagedWebGLRenderingContext(context);
       this.elementsPerVertex = 0;
       for (let i = 0; i < attributes.length; i++) {
@@ -12680,6 +13078,16 @@ void main () {
       this.indices = new Uint16Array(maxIndices);
       this.context.addRestorable(this);
     }
+    context;
+    vertices;
+    verticesBuffer = null;
+    verticesLength = 0;
+    dirtyVertices = false;
+    indices;
+    indicesBuffer = null;
+    indicesLength = 0;
+    dirtyIndices = false;
+    elementsPerVertex = 0;
     getAttributes() {
       return this.attributes;
     }
@@ -12811,27 +13219,27 @@ void main () {
   };
   var Position2Attribute = class extends VertexAttribute {
     constructor() {
-      super(Shader.POSITION, 0 /* Float */, 2);
+      super(Shader.POSITION, VertexAttributeType.Float, 2);
     }
   };
   var Position3Attribute = class extends VertexAttribute {
     constructor() {
-      super(Shader.POSITION, 0 /* Float */, 3);
+      super(Shader.POSITION, VertexAttributeType.Float, 3);
     }
   };
   var TexCoordAttribute = class extends VertexAttribute {
     constructor(unit = 0) {
-      super(Shader.TEXCOORDS + (unit == 0 ? "" : unit), 0 /* Float */, 2);
+      super(Shader.TEXCOORDS + (unit == 0 ? "" : unit), VertexAttributeType.Float, 2);
     }
   };
   var ColorAttribute = class extends VertexAttribute {
     constructor() {
-      super(Shader.COLOR, 0 /* Float */, 4);
+      super(Shader.COLOR, VertexAttributeType.Float, 4);
     }
   };
   var Color2Attribute = class extends VertexAttribute {
     constructor() {
-      super(Shader.COLOR2, 0 /* Float */, 4);
+      super(Shader.COLOR2, VertexAttributeType.Float, 4);
     }
   };
   var VertexAttributeType = /* @__PURE__ */ ((VertexAttributeType2) => {
@@ -12846,14 +13254,19 @@ void main () {
   var GL_ONE_MINUS_SRC_ALPHA = 771;
   var GL_DST_COLOR = 774;
   var _PolygonBatcher = class {
+    context;
+    drawCalls = 0;
+    isDrawing = false;
+    mesh;
+    shader = null;
+    lastTexture = null;
+    verticesLength = 0;
+    indicesLength = 0;
+    srcColorBlend;
+    srcAlphaBlend;
+    dstBlend;
+    cullWasEnabled = false;
     constructor(context, twoColorTint = true, maxVertices = 10920) {
-      this.drawCalls = 0;
-      this.isDrawing = false;
-      this.shader = null;
-      this.lastTexture = null;
-      this.verticesLength = 0;
-      this.indicesLength = 0;
-      this.cullWasEnabled = false;
       if (maxVertices > 10920)
         throw new Error("Can't have more than 10920 triangles per batch: " + maxVertices);
       this.context = context instanceof ManagedWebGLRenderingContext ? context : new ManagedWebGLRenderingContext(context);
@@ -12957,24 +13370,29 @@ void main () {
     }
   };
   var PolygonBatcher = _PolygonBatcher;
-  PolygonBatcher.disableCulling = false;
-  PolygonBatcher.globalDrawCalls = 0;
-  PolygonBatcher.blendModesGL = [
+  __publicField(PolygonBatcher, "disableCulling", false);
+  __publicField(PolygonBatcher, "globalDrawCalls", 0);
+  __publicField(PolygonBatcher, "blendModesGL", [
     { srcRgb: GL_SRC_ALPHA, srcRgbPma: GL_ONE, dstRgb: GL_ONE_MINUS_SRC_ALPHA, srcAlpha: GL_ONE },
     { srcRgb: GL_SRC_ALPHA, srcRgbPma: GL_ONE, dstRgb: GL_ONE, srcAlpha: GL_ONE },
     { srcRgb: GL_DST_COLOR, srcRgbPma: GL_DST_COLOR, dstRgb: GL_ONE_MINUS_SRC_ALPHA, srcAlpha: GL_ONE },
     { srcRgb: GL_ONE, srcRgbPma: GL_ONE, dstRgb: GL_ONE_MINUS_SRC_COLOR, srcAlpha: GL_ONE }
-  ];
+  ]);
 
   // spine-webgl/src/ShapeRenderer.ts
   var ShapeRenderer = class {
+    context;
+    isDrawing = false;
+    mesh;
+    shapeType = ShapeType.Filled;
+    color = new Color(1, 1, 1, 1);
+    shader = null;
+    vertexIndex = 0;
+    tmp = new Vector2();
+    srcColorBlend;
+    srcAlphaBlend;
+    dstBlend;
     constructor(context, maxVertices = 10920) {
-      this.isDrawing = false;
-      this.shapeType = 4 /* Filled */;
-      this.color = new Color(1, 1, 1, 1);
-      this.shader = null;
-      this.vertexIndex = 0;
-      this.tmp = new Vector2();
       if (maxVertices > 10920)
         throw new Error("Can't have more than 10920 triangles per batch: " + maxVertices);
       this.context = context instanceof ManagedWebGLRenderingContext ? context : new ManagedWebGLRenderingContext(context);
@@ -13011,13 +13429,13 @@ void main () {
       this.color.set(r, g, b, a);
     }
     point(x, y, color) {
-      this.check(0 /* Point */, 1);
+      this.check(ShapeType.Point, 1);
       if (!color)
         color = this.color;
       this.vertex(x, y, color);
     }
     line(x, y, x2, y2, color) {
-      this.check(1 /* Line */, 2);
+      this.check(ShapeType.Line, 2);
       let vertices = this.mesh.getVertices();
       let idx = this.vertexIndex;
       if (!color)
@@ -13026,7 +13444,7 @@ void main () {
       this.vertex(x2, y2, color);
     }
     triangle(filled, x, y, x2, y2, x3, y3, color, color2, color3) {
-      this.check(filled ? 4 /* Filled */ : 1 /* Line */, 3);
+      this.check(filled ? ShapeType.Filled : ShapeType.Line, 3);
       let vertices = this.mesh.getVertices();
       let idx = this.vertexIndex;
       if (!color)
@@ -13049,7 +13467,7 @@ void main () {
       }
     }
     quad(filled, x, y, x2, y2, x3, y3, x4, y4, color, color2, color3, color4) {
-      this.check(filled ? 4 /* Filled */ : 1 /* Line */, 3);
+      this.check(filled ? ShapeType.Filled : ShapeType.Line, 3);
       let vertices = this.mesh.getVertices();
       let idx = this.vertexIndex;
       if (!color)
@@ -13082,7 +13500,7 @@ void main () {
       this.quad(filled, x, y, x + width, y, x + width, y + height, x, y + height, color, color, color, color);
     }
     rectLine(filled, x1, y1, x2, y2, width, color) {
-      this.check(filled ? 4 /* Filled */ : 1 /* Line */, 8);
+      this.check(filled ? ShapeType.Filled : ShapeType.Line, 8);
       if (!color)
         color = this.color;
       let t = this.tmp.set(y2 - y1, x1 - x2);
@@ -13115,7 +13533,7 @@ void main () {
     polygon(polygonVertices, offset, count, color) {
       if (count < 3)
         throw new Error("Polygon must contain at least 3 vertices");
-      this.check(1 /* Line */, count * 2);
+      this.check(ShapeType.Line, count * 2);
       if (!color)
         color = this.color;
       let vertices = this.mesh.getVertices();
@@ -13153,7 +13571,7 @@ void main () {
       let sin = Math.sin(angle);
       let cx = radius, cy = 0;
       if (!filled) {
-        this.check(1 /* Line */, segments * 2 + 2);
+        this.check(ShapeType.Line, segments * 2 + 2);
         for (let i = 0; i < segments; i++) {
           this.vertex(x + cx, y + cy, color);
           let temp2 = cx;
@@ -13163,7 +13581,7 @@ void main () {
         }
         this.vertex(x + cx, y + cy, color);
       } else {
-        this.check(4 /* Filled */, segments * 3 + 3);
+        this.check(ShapeType.Filled, segments * 3 + 3);
         segments--;
         for (let i = 0; i < segments; i++) {
           this.vertex(x, y, color);
@@ -13182,7 +13600,7 @@ void main () {
       this.vertex(x + cx, y + cy, color);
     }
     curve(x1, y1, cx1, cy1, cx2, cy2, x2, y2, segments, color) {
-      this.check(1 /* Line */, segments * 2 + 2);
+      this.check(ShapeType.Line, segments * 2 + 2);
       if (!color)
         color = this.color;
       let subdiv_step = 1 / segments;
@@ -13271,28 +13689,29 @@ void main () {
 
   // spine-webgl/src/SkeletonDebugRenderer.ts
   var _SkeletonDebugRenderer = class {
+    boneLineColor = new Color(1, 0, 0, 1);
+    boneOriginColor = new Color(0, 1, 0, 1);
+    attachmentLineColor = new Color(0, 0, 1, 0.5);
+    triangleLineColor = new Color(1, 0.64, 0, 0.5);
+    pathColor = new Color().setFromString("FF7F00");
+    clipColor = new Color(0.8, 0, 0, 2);
+    aabbColor = new Color(0, 1, 0, 0.5);
+    drawBones = true;
+    drawRegionAttachments = true;
+    drawBoundingBoxes = true;
+    drawMeshHull = true;
+    drawMeshTriangles = true;
+    drawPaths = true;
+    drawSkeletonXY = false;
+    drawClipping = true;
+    premultipliedAlpha = false;
+    scale = 1;
+    boneWidth = 2;
+    context;
+    bounds = new SkeletonBounds();
+    temp = new Array();
+    vertices = Utils.newFloatArray(2 * 1024);
     constructor(context) {
-      this.boneLineColor = new Color(1, 0, 0, 1);
-      this.boneOriginColor = new Color(0, 1, 0, 1);
-      this.attachmentLineColor = new Color(0, 0, 1, 0.5);
-      this.triangleLineColor = new Color(1, 0.64, 0, 0.5);
-      this.pathColor = new Color().setFromString("FF7F00");
-      this.clipColor = new Color(0.8, 0, 0, 2);
-      this.aabbColor = new Color(0, 1, 0, 0.5);
-      this.drawBones = true;
-      this.drawRegionAttachments = true;
-      this.drawBoundingBoxes = true;
-      this.drawMeshHull = true;
-      this.drawMeshTriangles = true;
-      this.drawPaths = true;
-      this.drawSkeletonXY = false;
-      this.drawClipping = true;
-      this.premultipliedAlpha = false;
-      this.scale = 1;
-      this.boneWidth = 2;
-      this.bounds = new SkeletonBounds();
-      this.temp = new Array();
-      this.vertices = Utils.newFloatArray(2 * 1024);
       this.context = context instanceof ManagedWebGLRenderingContext ? context : new ManagedWebGLRenderingContext(context);
     }
     draw(shapes, skeleton, ignoredBones) {
@@ -13469,8 +13888,8 @@ void main () {
     }
   };
   var SkeletonDebugRenderer = _SkeletonDebugRenderer;
-  SkeletonDebugRenderer.LIGHT_GRAY = new Color(192 / 255, 192 / 255, 192 / 255, 1);
-  SkeletonDebugRenderer.GREEN = new Color(0, 1, 0, 1);
+  __publicField(SkeletonDebugRenderer, "LIGHT_GRAY", new Color(192 / 255, 192 / 255, 192 / 255, 1));
+  __publicField(SkeletonDebugRenderer, "GREEN", new Color(0, 1, 0, 1));
 
   // spine-webgl/src/SkeletonRenderer.ts
   var Renderable = class {
@@ -13481,18 +13900,19 @@ void main () {
     }
   };
   var _SkeletonRenderer = class {
+    premultipliedAlpha = false;
+    tempColor = new Color();
+    tempColor2 = new Color();
+    vertices;
+    vertexSize = 2 + 2 + 4;
+    twoColorTint = false;
+    renderable = new Renderable([], 0, 0);
+    clipper = new SkeletonClipping();
+    temp = new Vector2();
+    temp2 = new Vector2();
+    temp3 = new Color();
+    temp4 = new Color();
     constructor(context, twoColorTint = true) {
-      this.premultipliedAlpha = false;
-      this.tempColor = new Color();
-      this.tempColor2 = new Color();
-      this.vertexSize = 2 + 2 + 4;
-      this.twoColorTint = false;
-      this.renderable = new Renderable([], 0, 0);
-      this.clipper = new SkeletonClipping();
-      this.temp = new Vector2();
-      this.temp2 = new Vector2();
-      this.temp3 = new Color();
-      this.temp4 = new Color();
       this.twoColorTint = twoColorTint;
       if (twoColorTint)
         this.vertexSize += 4;
@@ -13641,7 +14061,7 @@ void main () {
     }
   };
   var SkeletonRenderer = _SkeletonRenderer;
-  SkeletonRenderer.QUAD_TRIANGLES = [0, 1, 2, 2, 3, 0];
+  __publicField(SkeletonRenderer, "QUAD_TRIANGLES", [0, 1, 2, 2, 3, 0]);
 
   // spine-webgl/src/SceneRenderer.ts
   var quad = [
@@ -13681,9 +14101,18 @@ void main () {
   var QUAD_TRIANGLES = [0, 1, 2, 2, 3, 0];
   var WHITE = new Color(1, 1, 1, 1);
   var SceneRenderer = class {
+    context;
+    canvas;
+    camera;
+    batcher;
+    twoColorTint = false;
+    batcherShader;
+    shapes;
+    shapesShader;
+    activeRenderer = null;
+    skeletonRenderer;
+    skeletonDebugRenderer;
     constructor(canvas, context, twoColorTint = true) {
-      this.twoColorTint = false;
-      this.activeRenderer = null;
       this.canvas = canvas;
       this.context = context instanceof ManagedWebGLRenderingContext ? context : new ManagedWebGLRenderingContext(context);
       this.twoColorTint = twoColorTint;
@@ -14068,9 +14497,9 @@ void main () {
         canvas.height = h;
       }
       this.context.gl.viewport(0, 0, canvas.width, canvas.height);
-      if (resizeMode === 1 /* Expand */)
+      if (resizeMode === ResizeMode.Expand)
         this.camera.setViewport(w, h);
-      else if (resizeMode === 2 /* Fit */) {
+      else if (resizeMode === ResizeMode.Fit) {
         let sourceWidth = canvas.width, sourceHeight = canvas.height;
         let targetWidth = this.camera.viewportWidth, targetHeight = this.camera.viewportHeight;
         let targetRatio = targetHeight / targetWidth;
@@ -14116,15 +14545,16 @@ void main () {
   var logoHeight = 108;
   var spinnerSize = 163;
   var LoadingScreen = class {
+    renderer;
+    logo = null;
+    spinner = null;
+    angle = 0;
+    fadeOut = 0;
+    fadeIn = 0;
+    timeKeeper = new TimeKeeper();
+    backgroundColor = new Color(0.135, 0.135, 0.135, 1);
+    tempColor = new Color();
     constructor(renderer) {
-      this.logo = null;
-      this.spinner = null;
-      this.angle = 0;
-      this.fadeOut = 0;
-      this.fadeIn = 0;
-      this.timeKeeper = new TimeKeeper();
-      this.backgroundColor = new Color(0.135, 0.135, 0.135, 1);
-      this.tempColor = new Color();
       this.renderer = renderer;
       this.timeKeeper.maxDelta = 9;
       if (!logoImage) {
@@ -14143,9 +14573,8 @@ void main () {
       }
     }
     dispose() {
-      var _a, _b;
-      (_a = this.logo) == null ? void 0 : _a.dispose();
-      (_b = this.spinner) == null ? void 0 : _b.dispose();
+      this.logo?.dispose();
+      this.spinner?.dispose();
     }
     draw(complete = false) {
       if (loaded < 2 || complete && this.fadeOut > FADE_OUT)
@@ -14209,6 +14638,23 @@ void main () {
         renderer.drawTextureRotated(this.spinner, (canvas.width - spinnerSize) / 2, (canvas.height - spinnerSize) / 2, spinnerSize, spinnerSize, spinnerSize / 2, spinnerSize / 2, this.angle, tempColor);
       renderer.end();
     }
+    drawInCoordinates(x, y) {
+      if (loaded < 2)
+        return;
+      this.timeKeeper.update();
+      let renderer = this.renderer;
+      renderer.batcher.setBlendMode(0 /* Normal */, true);
+      if (!this.logo) {
+        this.logo = new GLTexture(renderer.context, logoImage);
+        this.spinner = new GLTexture(renderer.context, spinnerImage);
+      }
+      const shiftedX = x - logoWidth / 2;
+      const shiftedY = y - logoHeight / 2;
+      renderer.drawTexture(this.logo, shiftedX, shiftedY, logoWidth, logoHeight);
+      this.angle -= this.timeKeeper.delta * 500;
+      if (this.spinner)
+        renderer.drawTextureRotated(this.spinner, shiftedX, shiftedY - 25, spinnerSize, spinnerSize, spinnerSize / 2, spinnerSize / 2, this.angle);
+    }
   };
   var SPINNER_DATA = "data:image/png;base64,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";
   var SPINE_LOGO_DATA = "data:image/png;base64,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";
@@ -14218,9 +14664,6 @@ void main () {
     /** Constructs a new spine canvas, rendering to the provided HTML canvas. */
     constructor(canvas, config) {
       this.config = config;
-      /** Tracks the current time, delta, and other time related statistics. */
-      this.time = new TimeKeeper();
-      this.disposed = false;
       if (!config.pathPrefix)
         config.pathPrefix = "";
       if (!config.app)
@@ -14276,6 +14719,20 @@ void main () {
       };
       requestAnimationFrame(waitForAssets);
     }
+    context;
+    /** Tracks the current time, delta, and other time related statistics. */
+    time = new TimeKeeper();
+    /** The HTML canvas to render to. */
+    htmlCanvas;
+    /** The WebGL rendering context. */
+    gl;
+    /** The scene renderer for easy drawing of skeletons, shapes, and images. */
+    renderer;
+    /** The asset manager to load assets with. */
+    assetManager;
+    /** The input processor used to listen to mouse, touch, and keyboard events. */
+    input;
+    disposed = false;
     /** Clears the canvas with the given color. The color values are given in the range [0,1]. */
     clear(r, g, b, a) {
       this.gl.clearColor(r, g, b, a);

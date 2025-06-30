@@ -55,7 +55,7 @@
     "plugin.spine4.2.dist": "webpack --config plugins/spine4.2/webpack.auto.dist.config.js",
     "plugin.spine4.2.watch": "webpack --config plugins/spine4.2/webpack.auto.config.js --watch",
     "plugin.spine4.2.dev": "webpack --config plugins/spine4.2/webpack.auto.config.js",
-    "plugin.spine4.2.runtimes": "cd plugins/spine4.2/spine-runtimes/spine-ts && npm run build:canvas && npm run build:webgl && cp spine-canvas/dist/iife/* ../../src/runtimes && cp spine-webgl/dist/iife/* ../../src/runtimes",
+    "plugin.spine4.2.runtimes": "cd plugins/spine4.2/spine-runtimes/spine-ts && npm run build:canvas:iife && npm run build:webgl:iife && cp spine-canvas/dist/iife/* ../../src/runtimes && cp spine-webgl/dist/iife/* ../../src/runtimes",
     "plugin.spine4.2.canvas.dist": "webpack --config plugins/spine4.2/webpack.canvas.dist.config.js",
     "plugin.spine4.2.canvas.watch": "webpack --config plugins/spine4.2/webpack.canvas.config.js --watch",
     "plugin.spine4.2.canvas.dev": "webpack --config plugins/spine4.2/webpack.canvas.config.js",
