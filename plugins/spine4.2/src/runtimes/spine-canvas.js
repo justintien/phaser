@@ -31,6 +31,7 @@ var spine = (() => {
     AnimationState: () => AnimationState,
     AnimationStateAdapter: () => AnimationStateAdapter,
     AnimationStateData: () => AnimationStateData,
+    AssetCache: () => AssetCache,
     AssetManager: () => AssetManager,
     AssetManagerBase: () => AssetManagerBase,
     AtlasAttachmentLoader: () => AtlasAttachmentLoader,
@@ -5868,16 +5869,15 @@ var spine = (() => {
     pathPrefix = "";
     textureLoader;
     downloader;
-    assets = {};
-    assetsRefCount = {};
-    assetsLoaded = {};
+    cache;
     errors = {};
     toLoad = 0;
     loaded = 0;
-    constructor(textureLoader, pathPrefix = "", downloader = new Downloader()) {
+    constructor(textureLoader, pathPrefix = "", downloader = new Downloader(), cache = new AssetCache()) {
       this.textureLoader = textureLoader;
       this.pathPrefix = pathPrefix;
       this.downloader = downloader;
+      this.cache = cache;
     }
     start(path) {
       this.toLoad++;
@@ -5886,8 +5886,8 @@ var spine = (() => {
     success(callback, path, asset) {
       this.toLoad--;
       this.loaded++;
-      this.assets[path] = asset;
-      this.assetsRefCount[path] = (this.assetsRefCount[path] || 0) + 1;
+      this.cache.assets[path] = asset;
+      this.cache.assetsRefCount[path] = (this.cache.assetsRefCount[path] || 0) + 1;
       if (callback)
         callback(path, asset);
     }
@@ -5923,7 +5923,7 @@ var spine = (() => {
       path = this.start(path);
       if (this.reuseAssets(path, success, error))
         return;
-      this.assetsLoaded[path] = new Promise((resolve, reject) => {
+      this.cache.assetsLoaded[path] = new Promise((resolve, reject) => {
         this.downloader.downloadBinary(path, (data) => {
           this.success(success, path, data);
           resolve(data);
@@ -5950,7 +5950,7 @@ var spine = (() => {
       path = this.start(path);
       if (this.reuseAssets(path, success, error))
         return;
-      this.assetsLoaded[path] = new Promise((resolve, reject) => {
+      this.cache.assetsLoaded[path] = new Promise((resolve, reject) => {
         this.downloader.downloadJson(path, (data) => {
           this.success(success, path, data);
           resolve(data);
@@ -5964,10 +5964,14 @@ var spine = (() => {
     reuseAssets(path, success = () => {
     }, error = () => {
     }) {
-      const loadedStatus = this.assetsLoaded[path];
+      const loadedStatus = this.cache.assetsLoaded[path];
       const alreadyExistsOrLoading = loadedStatus !== void 0;
       if (alreadyExistsOrLoading) {
-        loadedStatus.then((data) => this.success(success, path, data)).catch((errorMsg) => this.error(error, path, errorMsg));
+        this.cache.assetsLoaded[path] = loadedStatus.then((data) => {
+          data = data instanceof Image || data instanceof ImageBitmap ? this.textureLoader(data) : data;
+          this.success(success, path, data);
+          return data;
+        }).catch((errorMsg) => this.error(error, path, errorMsg));
       }
       return alreadyExistsOrLoading;
     }
@@ -5977,7 +5981,7 @@ var spine = (() => {
       path = this.start(path);
       if (this.reuseAssets(path, success, error))
         return;
-      this.assetsLoaded[path] = new Promise((resolve, reject) => {
+      this.cache.assetsLoaded[path] = new Promise((resolve, reject) => {
         let isBrowser = !!(typeof window !== "undefined" && typeof navigator !== "undefined" && window.document);
         let isWebWorker = !isBrowser;
         if (isWebWorker) {
@@ -6024,7 +6028,7 @@ var spine = (() => {
       path = this.start(path);
       if (this.reuseAssets(path, success, error))
         return;
-      this.assetsLoaded[path] = new Promise((resolve, reject) => {
+      this.cache.assetsLoaded[path] = new Promise((resolve, reject) => {
         this.downloader.downloadText(path, (atlasText) => {
           try {
             let atlas = new TextureAtlas(atlasText);
@@ -6043,7 +6047,7 @@ var spine = (() => {
                 },
                 (imagePath, message) => {
                   if (!abort) {
-                    const errorMsg = `Couldn't load texture atlas ${path} page image: ${imagePath}`;
+                    const errorMsg = `Couldn't load texture ${path} page image: ${imagePath}`;
                     this.error(error, path, errorMsg);
                     reject(errorMsg);
                   }
@@ -6069,7 +6073,7 @@ var spine = (() => {
       path = this.start(path);
       if (this.reuseAssets(path, success, error))
         return;
-      this.assetsLoaded[path] = new Promise((resolve, reject) => {
+      this.cache.assetsLoaded[path] = new Promise((resolve, reject) => {
         this.downloader.downloadText(path, (atlasText) => {
           try {
             const atlas = new TextureAtlas(atlasText);
@@ -6133,12 +6137,15 @@ var spine = (() => {
         );
       });
     }
+    setCache(cache) {
+      this.cache = cache;
+    }
     get(path) {
-      return this.assets[this.pathPrefix + path];
+      return this.cache.assets[this.pathPrefix + path];
     }
     require(path) {
       path = this.pathPrefix + path;
-      let asset = this.assets[path];
+      let asset = this.cache.assets[path];
       if (asset)
         return asset;
       let error = this.errors[path];
@@ -6146,23 +6153,23 @@ var spine = (() => {
     }
     remove(path) {
       path = this.pathPrefix + path;
-      let asset = this.assets[path];
+      let asset = this.cache.assets[path];
       if (asset.dispose)
         asset.dispose();
-      delete this.assets[path];
-      delete this.assetsRefCount[path];
-      delete this.assetsLoaded[path];
+      delete this.cache.assets[path];
+      delete this.cache.assetsRefCount[path];
+      delete this.cache.assetsLoaded[path];
       return asset;
     }
     removeAll() {
-      for (let path in this.assets) {
-        let asset = this.assets[path];
+      for (let path in this.cache.assets) {
+        let asset = this.cache.assets[path];
         if (asset.dispose)
           asset.dispose();
       }
-      this.assets = {};
-      this.assetsLoaded = {};
-      this.assetsRefCount = {};
+      this.cache.assets = {};
+      this.cache.assetsLoaded = {};
+      this.cache.assetsRefCount = {};
     }
     isLoadingComplete() {
       return this.toLoad == 0;
@@ -6178,7 +6185,7 @@ var spine = (() => {
     }
     // dispose asset only if it's not used by others
     disposeAsset(path) {
-      if (--this.assetsRefCount[path] === 0) {
+      if (--this.cache.assetsRefCount[path] === 0) {
         this.remove(path);
       }
     }
@@ -6189,6 +6196,25 @@ var spine = (() => {
       return this.errors;
     }
   };
+  var _AssetCache = class {
+    assets = {};
+    assetsRefCount = {};
+    assetsLoaded = {};
+    static getCache(id) {
+      const cache = _AssetCache.AVAILABLE_CACHES.get(id);
+      if (cache)
+        return cache;
+      const newCache = new _AssetCache();
+      _AssetCache.AVAILABLE_CACHES.set(id, newCache);
+      return newCache;
+    }
+    async addAsset(path, asset) {
+      this.assetsLoaded[path] = Promise.resolve(asset);
+      this.assets[path] = await asset;
+    }
+  };
+  var AssetCache = _AssetCache;
+  __publicField(AssetCache, "AVAILABLE_CACHES", /* @__PURE__ */ new Map());
   var Downloader = class {
     callbacks = {};
     rawDataUris = {};

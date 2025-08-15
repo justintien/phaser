@@ -95,7 +95,13 @@ var SpineGameObjectWebGLDirect = function (renderer, src, camera, parentMatrix, 
     }
     */
 
-    var physics = 0; // 目前未知這個應該抓哪個設置檔，暫時先固定 0. 0-none;1-reset;2-update;3-pose
+    var physics = 2; // 目前未知這個應該抓哪個設置檔，暫時先固定 0. 0-none;1-reset;2-update;3-pose
+
+    if (physics === 2)
+    {
+        // 更新物理模擬
+        skeleton.update(renderer.game.loop.delta / 1000);
+    }
 
     skeleton.updateWorldTransform(physics);
 
