@@ -101,16 +101,17 @@ var SpineGameObjectWebGLDirect = function (renderer, src, camera, parentMatrix, 
     var _first = (src._pm_seen !== true);
     var _allowPausedPhysics = !!(src.getData && src.getData('physicsWhilePaused'));
     var physics = 2; // 0-none;1-reset;2-update;3-pose
-    if (_paused) {
+    if (_paused)
+    {
         physics = _allowPausedPhysics ? 2 : 3;
-    } else {
-        if (_first) physics = 3;
-        else if (_prevPaused && !_prevPausedWithPhysics) physics = 1;
-        else physics = 2;
     }
-    src._pm_prevPaused = _paused;
-    src._pm_prevPausedWithPhysics = _paused && _allowPausedPhysics;
-    src._pm_seen = true;
+    else
+    if (_first) { physics = 3; }
+    else if (_prevPaused && !_prevPausedWithPhysics) { physics = 1; }
+    else { physics = 2; }
+    src._pmPrevPaused = _paused;
+    src._pmPrevPausedWithPhysics = _paused && _allowPausedPhysics;
+    src._pmSeen = true;
 
     if (physics === 2)
     {

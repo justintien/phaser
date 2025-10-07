@@ -791,16 +791,17 @@ var SpineGameObject = new Class({
         var _first = (this._pm_seen !== true);
         var _allowPausedPhysics = !!(this.getData && this.getData('physicsWhilePaused'));
         var physics = 2; // 0-none;1-reset;2-update;3-pose
-        if (_paused) {
+        if (_paused)
+        {
             physics = _allowPausedPhysics ? 2 : 3;
-        } else {
-            if (_first) physics = 3;
-            else if (_prevPaused && !_prevPausedWithPhysics) physics = 1;
-            else physics = 2;
         }
-        this._pm_prevPaused = _paused;
-        this._pm_prevPausedWithPhysics = _paused && _allowPausedPhysics;
-        this._pm_seen = true;
+        else
+        if (_first) { physics = 3; }
+        else if (_prevPaused && !_prevPausedWithPhysics) { physics = 1; }
+        else { physics = 2; }
+        this._pmPrevPaused = _paused;
+        this._pmPrevPausedWithPhysics = _paused && _allowPausedPhysics;
+        this._pmSeen = true;
 
         if (physics === 2)
         {
