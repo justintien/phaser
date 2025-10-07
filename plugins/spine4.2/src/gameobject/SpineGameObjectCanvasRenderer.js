@@ -101,7 +101,22 @@ var SpineGameObjectCanvasRenderer = function (renderer, src, camera, parentMatri
         skeleton.scaleY *= -1;
     }
 
-    var physics = 2; // 目前未知這個應該抓哪個設置檔，暫時先固定 0. 0-none;1-reset;2-update;3-pose
+    var _prevPaused = src._pm_prevPaused === true;
+    var _prevPausedWithPhysics = src._pm_prevPausedWithPhysics === true;
+    var _paused = (src.timeScale === 0);
+    var _first = (src._pm_seen !== true);
+    var _allowPausedPhysics = !!(src.getData && src.getData('physicsWhilePaused'));
+    var physics = 2; // 0-none;1-reset;2-update;3-pose
+    if (_paused) {
+        physics = _allowPausedPhysics ? 2 : 3;
+    } else {
+        if (_first) physics = 3;
+        else if (_prevPaused && !_prevPausedWithPhysics) physics = 1;
+        else physics = 2;
+    }
+    src._pm_prevPaused = _paused;
+    src._pm_prevPausedWithPhysics = _paused && _allowPausedPhysics;
+    src._pm_seen = true;
 
     if (physics === 2)
     {
