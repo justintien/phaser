@@ -95,23 +95,34 @@ var SpineGameObjectWebGLDirect = function (renderer, src, camera, parentMatrix, 
     }
     */
 
-    var _prevPaused = src._pm_prevPaused === true;
-    var _prevPausedWithPhysics = src._pm_prevPausedWithPhysics === true;
-    var _paused = (src.timeScale === 0);
-    var _first = (src._pm_seen !== true);
-    var _allowPausedPhysics = !!(src.getData && src.getData('physicsWhilePaused'));
+    var prevPaused = src.pmPrevPaused === true;
+    var prevPausedWithPhysics = src.pmPrevPausedWithPhysics === true;
+    var paused = (src.timeScale === 0);
+    var first = (src.pmSeen !== true);
+    var allowPausedPhysics = !!(src.getData && src.getData('physicsWhilePaused'));
     var physics = 2; // 0-none;1-reset;2-update;3-pose
-    if (_paused)
+
+    if (paused)
     {
-        physics = _allowPausedPhysics ? 2 : 3;
+        physics = allowPausedPhysics ? 2 : 3;
+    }
+    else if (first)
+    {
+        physics = 3;
+    }
+    else if (prevPaused && !prevPausedWithPhysics)
+    {
+        physics = 1;
     }
     else
-    if (_first) { physics = 3; }
-    else if (_prevPaused && !_prevPausedWithPhysics) { physics = 1; }
-    else { physics = 2; }
-    src._pmPrevPaused = _paused;
-    src._pmPrevPausedWithPhysics = _paused && _allowPausedPhysics;
-    src._pmSeen = true;
+    {
+        physics = 2;
+    }
+
+    src.pmPrevPaused = paused;
+    src.pmPrevPausedWithPhysics = paused && allowPausedPhysics;
+    src.pmSeen = true;
+
 
     if (physics === 2)
     {
