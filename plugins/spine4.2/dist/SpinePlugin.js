@@ -32488,10 +32488,6 @@ var SpineGameObject = new Class({
     var oldScaleY = this.scaleY;
     var physics = 2; // 目前未知這個應該抓哪個設置檔，暫時先固定 0. 0-none;1-reset;2-update;3-pose
 
-    if (physics === 2) {
-      // 更新物理模擬
-      skeleton.update(renderer.game.loop.delta / 1000);
-    }
     skeleton.x = this.x;
     skeleton.y = height - this.y;
     skeleton.scaleX = 1;
@@ -33157,6 +33153,8 @@ var SpineGameObject = new Class({
     var skeleton = this.skeleton;
     this.state.update(delta / 1000 * this.timeScale);
     this.state.apply(skeleton);
+    this.skeleton.update(delta / 1000);
+    this.skeleton.updateWorldTransform(2);
   },
   /**
    * Internal destroy handler, called as part of the destroy process.
@@ -34831,10 +34829,6 @@ var SpineGameObjectWebGLRenderer = function SpineGameObjectWebGLRenderer(rendere
 
   var physics = 2; // 目前未知這個應該抓哪個設置檔，暫時先固定 0. 0-none;1-reset;2-update;3-pose
 
-  if (physics === 2) {
-    // 更新物理模擬
-    skeleton.update(renderer.game.loop.delta / 1000);
-  }
   skeleton.updateWorldTransform(physics);
 
   //  Draw the current skeleton
@@ -34947,10 +34941,6 @@ var SpineGameObjectWebGLDirect = function SpineGameObjectWebGLDirect(renderer, s
 
   var physics = 2; // 目前未知這個應該抓哪個設置檔，暫時先固定 0. 0-none;1-reset;2-update;3-pose
 
-  if (physics === 2) {
-    // 更新物理模擬
-    skeleton.update(renderer.game.loop.delta / 1000);
-  }
   skeleton.updateWorldTransform(physics);
 
   //  Draw the current skeleton
@@ -35063,10 +35053,6 @@ var SpineGameObjectCanvasRenderer = function SpineGameObjectCanvasRenderer(rende
   }
   var physics = 2; // 目前未知這個應該抓哪個設置檔，暫時先固定 0. 0-none;1-reset;2-update;3-pose
 
-  if (physics === 2) {
-    // 更新物理模擬
-    skeleton.update(renderer.game.loop.delta / 1000);
-  }
   skeleton.updateWorldTransform(physics);
   skeletonRenderer.ctx = context;
   skeletonRenderer.debugRendering = plugin.drawDebug || src.drawDebug;
