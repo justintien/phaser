@@ -32486,25 +32486,24 @@ var SpineGameObject = new Class({
     var height = renderer.height;
     var oldScaleX = this.scaleX;
     var oldScaleY = this.scaleY;
-    var prevPaused = this.pmPrevPaused === true;
-    var prevPausedWithPhysics = this.pmPrevPausedWithPhysics === true;
-    var paused = this.timeScale === 0;
-    var first = this.pmSeen !== true;
-    var allowPausedPhysics = !!(this.getData && this.getData('physicsWhilePaused'));
+    var _prevPaused = this._pm_prevPaused === true;
+    var _prevPausedWithPhysics = this._pm_prevPausedWithPhysics === true;
+    var _paused = this.timeScale === 0;
+    var _first = this._pm_seen !== true;
+    var _allowPausedPhysics = !!(this.getData && this.getData('physicsWhilePaused'));
     var physics = 2; // 0-none;1-reset;2-update;3-pose
-
-    if (paused) {
-      physics = allowPausedPhysics ? 2 : 3;
-    } else if (first) {
+    if (_paused) {
+      physics = _allowPausedPhysics ? 2 : 3;
+    } else if (_first) {
       physics = 3;
-    } else if (prevPaused && !prevPausedWithPhysics) {
+    } else if (_prevPaused && !_prevPausedWithPhysics) {
       physics = 1;
     } else {
       physics = 2;
     }
-    this.pmPrevPaused = paused;
-    this.pmPrevPausedWithPhysics = paused && allowPausedPhysics;
-    this.pmSeen = true;
+    this._pmPrevPaused = _paused;
+    this._pmPrevPausedWithPhysics = _paused && _allowPausedPhysics;
+    this._pmSeen = true;
     if (physics === 2) {
       // 更新物理模擬
       skeleton.update(renderer.game.loop.delta / 1000);
@@ -34846,25 +34845,24 @@ var SpineGameObjectWebGLRenderer = function SpineGameObjectWebGLRenderer(rendere
   }
   */
 
-  var prevPaused = src.pmPrevPaused === true;
-  var prevPausedWithPhysics = src.pmPrevPausedWithPhysics === true;
-  var paused = src.timeScale === 0;
-  var first = src.pmSeen !== true;
-  var allowPausedPhysics = !!(src.getData && src.getData('physicsWhilePaused'));
+  var _prevPaused = src._pm_prevPaused === true;
+  var _prevPausedWithPhysics = src._pm_prevPausedWithPhysics === true;
+  var _paused = src.timeScale === 0;
+  var _first = src._pm_seen !== true;
+  var _allowPausedPhysics = !!(src.getData && src.getData('physicsWhilePaused'));
   var physics = 2; // 0-none;1-reset;2-update;3-pose
-
-  if (paused) {
-    physics = allowPausedPhysics ? 2 : 3;
-  } else if (first) {
+  if (_paused) {
+    physics = _allowPausedPhysics ? 2 : 3;
+  } else if (_first) {
     physics = 3;
-  } else if (prevPaused && !prevPausedWithPhysics) {
+  } else if (_prevPaused && !_prevPausedWithPhysics) {
     physics = 1;
   } else {
     physics = 2;
   }
-  src.pmPrevPaused = paused;
-  src.pmPrevPausedWithPhysics = paused && allowPausedPhysics;
-  src.pmSeen = true;
+  src._pmPrevPaused = _paused;
+  src._pmPrevPausedWithPhysics = _paused && _allowPausedPhysics;
+  src._pmSeen = true;
   if (physics === 2) {
     // 更新物理模擬
     skeleton.update(renderer.game.loop.delta / 1000);
@@ -34979,25 +34977,24 @@ var SpineGameObjectWebGLDirect = function SpineGameObjectWebGLDirect(renderer, s
   }
   */
 
-  var prevPaused = src.pmPrevPaused === true;
-  var prevPausedWithPhysics = src.pmPrevPausedWithPhysics === true;
-  var paused = src.timeScale === 0;
-  var first = src.pmSeen !== true;
-  var allowPausedPhysics = !!(src.getData && src.getData('physicsWhilePaused'));
+  var _prevPaused = src._pm_prevPaused === true;
+  var _prevPausedWithPhysics = src._pm_prevPausedWithPhysics === true;
+  var _paused = src.timeScale === 0;
+  var _first = src._pm_seen !== true;
+  var _allowPausedPhysics = !!(src.getData && src.getData('physicsWhilePaused'));
   var physics = 2; // 0-none;1-reset;2-update;3-pose
-
-  if (paused) {
-    physics = allowPausedPhysics ? 2 : 3;
-  } else if (first) {
+  if (_paused) {
+    physics = _allowPausedPhysics ? 2 : 3;
+  } else if (_first) {
     physics = 3;
-  } else if (prevPaused && !prevPausedWithPhysics) {
+  } else if (_prevPaused && !_prevPausedWithPhysics) {
     physics = 1;
   } else {
     physics = 2;
   }
-  src.pmPrevPaused = paused;
-  src.pmPrevPausedWithPhysics = paused && allowPausedPhysics;
-  src.pmSeen = true;
+  src._pmPrevPaused = _paused;
+  src._pmPrevPausedWithPhysics = _paused && _allowPausedPhysics;
+  src._pmSeen = true;
   if (physics === 2) {
     // 更新物理模擬
     skeleton.update(renderer.game.loop.delta / 1000);
@@ -35112,25 +35109,24 @@ var SpineGameObjectCanvasRenderer = function SpineGameObjectCanvasRenderer(rende
     skeleton.y = calcMatrix.ty;
     skeleton.scaleY *= -1;
   }
-  var prevPaused = src.pmPrevPaused === true;
-  var prevPausedWithPhysics = src.pmPrevPausedWithPhysics === true;
-  var paused = src.timeScale === 0;
-  var first = src.pmSeen !== true;
-  var allowPausedPhysics = !!(src.getData && src.getData('physicsWhilePaused'));
+  var _prevPaused = src._pm_prevPaused === true;
+  var _prevPausedWithPhysics = src._pm_prevPausedWithPhysics === true;
+  var _paused = src.timeScale === 0;
+  var _first = src._pm_seen !== true;
+  var _allowPausedPhysics = !!(src.getData && src.getData('physicsWhilePaused'));
   var physics = 2; // 0-none;1-reset;2-update;3-pose
-
-  if (paused) {
-    physics = allowPausedPhysics ? 2 : 3;
-  } else if (first) {
+  if (_paused) {
+    physics = _allowPausedPhysics ? 2 : 3;
+  } else if (_first) {
     physics = 3;
-  } else if (prevPaused && !prevPausedWithPhysics) {
+  } else if (_prevPaused && !_prevPausedWithPhysics) {
     physics = 1;
   } else {
     physics = 2;
   }
-  src.pmPrevPaused = paused;
-  src.pmPrevPausedWithPhysics = paused && allowPausedPhysics;
-  src.pmSeen = true;
+  src._pmPrevPaused = _paused;
+  src._pmPrevPausedWithPhysics = _paused && _allowPausedPhysics;
+  src._pmSeen = true;
   if (physics === 2) {
     // 更新物理模擬
     skeleton.update(renderer.game.loop.delta / 1000);

@@ -785,34 +785,23 @@ var SpineGameObject = new Class({
         var oldScaleX = this.scaleX;
         var oldScaleY = this.scaleY;
 
-        var prevPaused = this.pmPrevPaused === true;
-        var prevPausedWithPhysics = this.pmPrevPausedWithPhysics === true;
-        var paused = (this.timeScale === 0);
-        var first = (this.pmSeen !== true);
-        var allowPausedPhysics = !!(this.getData && this.getData('physicsWhilePaused'));
+        var _prevPaused = this._pm_prevPaused === true;
+        var _prevPausedWithPhysics = this._pm_prevPausedWithPhysics === true;
+        var _paused = (this.timeScale === 0);
+        var _first = (this._pm_seen !== true);
+        var _allowPausedPhysics = !!(this.getData && this.getData('physicsWhilePaused'));
         var physics = 2; // 0-none;1-reset;2-update;3-pose
-
-        if (paused)
+        if (_paused)
         {
-            physics = allowPausedPhysics ? 2 : 3;
-        }
-        else if (first)
-        {
-            physics = 3;
-        }
-        else if (prevPaused && !prevPausedWithPhysics)
-        {
-            physics = 1;
+            physics = _allowPausedPhysics ? 2 : 3;
         }
         else
-        {
-            physics = 2;
-        }
-
-        this.pmPrevPaused = paused;
-        this.pmPrevPausedWithPhysics = paused && allowPausedPhysics;
-        this.pmSeen = true;
-
+        if (_first) { physics = 3; }
+        else if (_prevPaused && !_prevPausedWithPhysics) { physics = 1; }
+        else { physics = 2; }
+        this._pmPrevPaused = _paused;
+        this._pmPrevPausedWithPhysics = _paused && _allowPausedPhysics;
+        this._pmSeen = true;
 
         if (physics === 2)
         {
