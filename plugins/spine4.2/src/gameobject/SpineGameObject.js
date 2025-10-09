@@ -785,22 +785,7 @@ var SpineGameObject = new Class({
         var oldScaleX = this.scaleX;
         var oldScaleY = this.scaleY;
 
-        var _prevPaused = this._pm_prevPaused === true;
-        var _prevPausedWithPhysics = this._pm_prevPausedWithPhysics === true;
-        var _paused = (this.timeScale === 0);
-        var _first = (this._pm_seen !== true);
-        var _allowPausedPhysics = !!(this.getData && this.getData('physicsWhilePaused'));
-        var physics = 2; // 0-none;1-reset;2-update;3-pose
-        if (_paused) {
-            physics = _allowPausedPhysics ? 2 : 3;
-        } else {
-            if (_first) physics = 3;
-            else if (_prevPaused && !_prevPausedWithPhysics) physics = 1;
-            else physics = 2;
-        }
-        this._pm_prevPaused = _paused;
-        this._pm_prevPausedWithPhysics = _paused && _allowPausedPhysics;
-        this._pm_seen = true;
+        var physics = 2; // 目前未知這個應該抓哪個設置檔，暫時先固定 0. 0-none;1-reset;2-update;3-pose
 
         if (physics === 2)
         {
