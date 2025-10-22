@@ -30440,6 +30440,17 @@ var SpineGameObject = new Class({
     this.root = null;
 
     /**
+     * Cached setup pose rotation (degrees) for the root bone.
+     * Used to restore the authored orientation after Phaser applies its transform.
+     *
+     * @name SpineGameObject#_rootSetupRotation
+     * @type {number}
+     * @private
+     * @since 3.19.0
+     */
+    this._rootSetupRotation = 0;
+
+    /**
      * This object holds the calculated bounds of the current
      * pose, as set when a new Skeleton is applied.
      *
@@ -30759,6 +30770,14 @@ var SpineGameObject = new Class({
     }
     this.root = this.getRootBone();
     if (this.root) {
+      var setupRotation = 0;
+      if (this.root.data && typeof this.root.data.rotation === 'number') {
+        setupRotation = this.root.data.rotation;
+      } else if (typeof this.root.rotation === 'number') {
+        setupRotation = this.root.rotation;
+      }
+      this._rootSetupRotation = setupRotation;
+
       //  +90 degrees to account for the difference in Spine vs. Phaser rotation
       this.root.rotation = RadToDeg(CounterClockwise(this.rotation)) + 90;
     }
@@ -33219,6 +33238,21 @@ var CounterClockwise = __webpack_require__(8);
 var GetCalcMatrix = __webpack_require__(56);
 var RadToDeg = __webpack_require__(9);
 var Wrap = __webpack_require__(6);
+var computeRootRotationDeg = function computeRootRotationDeg(scaleX, scaleY, rotationRad, useWebGLPath) {
+  var rotationDeg = RadToDeg(rotationRad);
+  var ccwDeg = RadToDeg(CounterClockwise(rotationRad));
+  var result;
+  if (scaleX < 0) {
+    result = useWebGLPath ? Wrap(rotationDeg - 180, 0, 360) : Wrap(rotationDeg, 0, 360);
+  } else {
+    result = Wrap(ccwDeg + 90, 0, 360);
+  }
+  if (scaleY < 0) {
+    var adjustment = rotationDeg * 2;
+    result += scaleX < 0 ? -adjustment : adjustment;
+  }
+  return Wrap(result, 0, 360);
+};
 
 /**
  * Renders this Game Object with the WebGL Renderer to the given Camera.
@@ -33259,23 +33293,17 @@ var SpineGameObjectWebGLRenderer = function SpineGameObjectWebGLRenderer(rendere
   skeleton.y = viewportHeight - calcMatrix.ty;
   skeleton.scaleX = calcMatrix.scaleX;
   skeleton.scaleY = calcMatrix.scaleY;
+  var computedRotation = computeRootRotationDeg(src.scaleX, src.scaleY, calcMatrix.rotationNormalized, true);
+  var defaultRotation = computeRootRotationDeg(src.scaleX, src.scaleY, 0, true);
   if (src.scaleX < 0) {
     skeleton.scaleX *= -1;
-
-    //  -180 degrees to account for the difference in Spine vs. Phaser rotation when inversely scaled
-    src.root.rotation = Wrap(RadToDeg(calcMatrix.rotationNormalized) - 180, 0, 360);
-  } else {
-    //  +90 degrees to account for the difference in Spine vs. Phaser rotation
-    src.root.rotation = Wrap(RadToDeg(CounterClockwise(calcMatrix.rotationNormalized)) + 90, 0, 360);
   }
   if (src.scaleY < 0) {
     skeleton.scaleY *= -1;
-    if (src.scaleX < 0) {
-      src.root.rotation -= RadToDeg(calcMatrix.rotationNormalized) * 2;
-    } else {
-      src.root.rotation += RadToDeg(calcMatrix.rotationNormalized) * 2;
-    }
   }
+  var setupRotation = typeof src._rootSetupRotation === 'number' ? src._rootSetupRotation : 0;
+  var finalRotation = computedRotation + (setupRotation - defaultRotation);
+  src.root.rotation = Wrap(finalRotation, 0, 360);
 
   /*
   if (renderer.currentFramebuffer !== null)
@@ -33330,6 +33358,21 @@ var CounterClockwise = __webpack_require__(8);
 var GetCalcMatrix = __webpack_require__(56);
 var RadToDeg = __webpack_require__(9);
 var Wrap = __webpack_require__(6);
+var computeRootRotationDeg = function computeRootRotationDeg(scaleX, scaleY, rotationRad, useWebGLPath) {
+  var rotationDeg = RadToDeg(rotationRad);
+  var ccwDeg = RadToDeg(CounterClockwise(rotationRad));
+  var result;
+  if (scaleX < 0) {
+    result = useWebGLPath ? Wrap(rotationDeg - 180, 0, 360) : Wrap(rotationDeg, 0, 360);
+  } else {
+    result = Wrap(ccwDeg + 90, 0, 360);
+  }
+  if (scaleY < 0) {
+    var adjustment = rotationDeg * 2;
+    result += scaleX < 0 ? -adjustment : adjustment;
+  }
+  return Wrap(result, 0, 360);
+};
 
 /**
  * Directly renders this Game Object with the WebGL Renderer to the given Camera.
@@ -33369,23 +33412,17 @@ var SpineGameObjectWebGLDirect = function SpineGameObjectWebGLDirect(renderer, s
   skeleton.y = viewportHeight - calcMatrix.ty;
   skeleton.scaleX = calcMatrix.scaleX;
   skeleton.scaleY = calcMatrix.scaleY;
+  var computedRotation = computeRootRotationDeg(src.scaleX, src.scaleY, calcMatrix.rotationNormalized, true);
+  var defaultRotation = computeRootRotationDeg(src.scaleX, src.scaleY, 0, true);
   if (src.scaleX < 0) {
     skeleton.scaleX *= -1;
-
-    //  -180 degrees to account for the difference in Spine vs. Phaser rotation when inversely scaled
-    src.root.rotation = Wrap(RadToDeg(calcMatrix.rotationNormalized) - 180, 0, 360);
-  } else {
-    //  +90 degrees to account for the difference in Spine vs. Phaser rotation
-    src.root.rotation = Wrap(RadToDeg(CounterClockwise(calcMatrix.rotationNormalized)) + 90, 0, 360);
   }
   if (src.scaleY < 0) {
     skeleton.scaleY *= -1;
-    if (src.scaleX < 0) {
-      src.root.rotation -= RadToDeg(calcMatrix.rotationNormalized) * 2;
-    } else {
-      src.root.rotation += RadToDeg(calcMatrix.rotationNormalized) * 2;
-    }
   }
+  var setupRotation = typeof src._rootSetupRotation === 'number' ? src._rootSetupRotation : 0;
+  var finalRotation = computedRotation + (setupRotation - defaultRotation);
+  src.root.rotation = Wrap(finalRotation, 0, 360);
 
   /*
   if (renderer.currentFramebuffer !== null)
@@ -33437,6 +33474,21 @@ module.exports = SpineGameObjectWebGLDirect;
 var CounterClockwise = __webpack_require__(8);
 var RadToDeg = __webpack_require__(9);
 var Wrap = __webpack_require__(6);
+var computeRootRotationDeg = function computeRootRotationDeg(scaleX, scaleY, rotationRad, useWebGLPath) {
+  var rotationDeg = RadToDeg(rotationRad);
+  var ccwDeg = RadToDeg(CounterClockwise(rotationRad));
+  var result;
+  if (scaleX < 0) {
+    result = useWebGLPath ? Wrap(rotationDeg - 180, 0, 360) : Wrap(rotationDeg, 0, 360);
+  } else {
+    result = Wrap(ccwDeg + 90, 0, 360);
+  }
+  if (scaleY < 0) {
+    var adjustment = rotationDeg * 2;
+    result += scaleX < 0 ? -adjustment : adjustment;
+  }
+  return Wrap(result, 0, 360);
+};
 
 /**
  * Renders this Game Object with the Canvas Renderer to the given Camera.
@@ -33486,21 +33538,17 @@ var SpineGameObjectCanvasRenderer = function SpineGameObjectCanvasRenderer(rende
 
   //  Inverse or we get upside-down skeletons
   skeleton.scaleY = calcMatrix.scaleY * -1;
+  var computedRotation = computeRootRotationDeg(src.scaleX, src.scaleY, calcMatrix.rotationNormalized, false);
+  var defaultRotation = computeRootRotationDeg(src.scaleX, src.scaleY, 0, false);
   if (src.scaleX < 0) {
     skeleton.scaleX *= -1;
-    src.root.rotation = RadToDeg(calcMatrix.rotationNormalized);
-  } else {
-    //  +90 degrees to account for the difference in Spine vs. Phaser rotation
-    src.root.rotation = Wrap(RadToDeg(CounterClockwise(calcMatrix.rotationNormalized)) + 90, 0, 360);
   }
   if (src.scaleY < 0) {
     skeleton.scaleY *= -1;
-    if (src.scaleX < 0) {
-      src.root.rotation -= RadToDeg(calcMatrix.rotationNormalized) * 2;
-    } else {
-      src.root.rotation += RadToDeg(calcMatrix.rotationNormalized) * 2;
-    }
   }
+  var setupRotation = typeof src._rootSetupRotation === 'number' ? src._rootSetupRotation : 0;
+  var finalRotation = computedRotation + (setupRotation - defaultRotation);
+  src.root.rotation = Wrap(finalRotation, 0, 360);
   if (camera.renderToTexture) {
     skeleton.y = calcMatrix.ty;
     skeleton.scaleY *= -1;

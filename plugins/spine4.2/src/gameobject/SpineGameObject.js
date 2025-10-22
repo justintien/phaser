@@ -167,6 +167,16 @@ var SpineGameObject = new Class({
         this.root = null;
 
         /**
+         * Cached setup pose rotation for the root bone (degrees).
+         *
+         * @name SpineGameObject#_rootSetupRotation
+         * @type {number}
+         * @private
+         * @since 3.19.0
+         */
+        this._rootSetupRotation = 0;
+
+        /**
          * This object holds the calculated bounds of the current
          * pose, as set when a new Skeleton is applied.
          *
@@ -571,6 +581,19 @@ var SpineGameObject = new Class({
 
         if (this.root)
         {
+            var setupRotation = 0;
+
+            if (this.root.data && typeof this.root.data.rotation === 'number')
+            {
+                setupRotation = this.root.data.rotation;
+            }
+            else if (typeof this.root.rotation === 'number')
+            {
+                setupRotation = this.root.rotation;
+            }
+
+            this._rootSetupRotation = setupRotation;
+
             //  +90 degrees to account for the difference in Spine vs. Phaser rotation
             this.root.rotation = RadToDeg(CounterClockwise(this.rotation)) + 90;
         }
