@@ -172,12 +172,13 @@ var SpineFile = new Class({
                 loader.setPath(path);
                 loader.setPrefix(prefix);
 
-                // 手機記憶體防護: 由伺服器端 CDN 縮放過大的 spine 頁面
+                // 手機記憶體防護: 由使用者提供的 URL 處理器縮放過大的 spine 頁面
                 // 這是唯一能完全避開全解析度解碼的路徑, 因此可修正所有 iOS 版本載入時的閃退
                 var memGuard = SpineFile.prototype._getSpineMemoryGuardConfig();
-                var cdnResize = !!(memGuard && memGuard.cdnResize);
+                var imageURLProcessor = memGuard && memGuard.imageURLProcessor;
+                var serverResize = !!(memGuard && memGuard.cdnResize && typeof imageURLProcessor === 'function');
                 var guardMax = memGuard ? (memGuard.maxTextureSize || 1024) : 0;
-                var pageSizes = cdnResize
+                var pageSizes = serverResize
                     ? SpineFile.prototype._parseSpineAtlasPageSizes(file.data)
                     : {};
 
@@ -194,8 +195,8 @@ var SpineFile = new Class({
                         loadURL = loadURL + qsSep + cacheBustQS;
                     }
 
-                    var usedCdn = false;
-                    if (cdnResize && guardMax > 0 && pageSizes[pageName])
+                    var usedResize = false;
+                    if (serverResize && guardMax > 0 && pageSizes[pageName])
                     {
                         var d = pageSizes[pageName];
                         var longest = Math.max(d.w, d.h);
@@ -207,23 +208,23 @@ var SpineFile = new Class({
                             var absURL = /^https?:\/\//.test(path)
                                 ? path + loadURL
                                 : (baseURL || '') + (path || '') + loadURL;
-                            var mm = /^(https?:\/\/[^/]+\/)(.*)$/.exec(absURL);
-                            if (mm)
+                            var q = memGuard.cdnResizeQuality || 100;
+                            var processedURL = imageURLProcessor(absURL, reqW, q);
+                            if (typeof processedURL === 'string' && processedURL)
                             {
-                                var q = memGuard.cdnResizeQuality || 100;
-                                loadURL = mm[1] + 'cdn-cgi/image/width=' + reqW + ',quality=' + q + ',fit=scale-down/' + mm[2];
-                                usedCdn = true;
-                                if (memGuard.debug)
+                                loadURL = processedURL;
+                                usedResize = (loadURL !== absURL);
+                                if (usedResize && memGuard.debug)
                                 {
-                                    SpineFile.prototype._spineGuardLog('cdn ' + pageName + ' ' + d.w + 'x' + d.h + ' -> w' + reqW);
+                                    SpineFile.prototype._spineGuardLog('resize ' + pageName + ' ' + d.w + 'x' + d.h + ' -> w' + reqW);
                                 }
                             }
                         }
                     }
 
                     // 危險紀錄: 防護開啟時仍以原始尺寸載入的頁面
-                    // (cdnResize 關閉, URL 無法改寫, 或尺寸未知)
-                    if (memGuard && memGuard.debug && !usedCdn)
+                    // (未提供 URL 處理器, URL 未改寫, 或尺寸未知)
+                    if (memGuard && memGuard.debug && !usedResize)
                     {
                         var pd = pageSizes[pageName];
                         var full = pd ? pd.w + 'x' + pd.h : '?';
@@ -235,10 +236,10 @@ var SpineFile = new Class({
 
                     var image = new ImageFile(loader, key, loadURL, textureXhrSettings);
 
-                    // 經 CDN 縮放的頁面大多仍是預乘 alpha, 但透明區域 RGB 會變白
-                    // (Cloudflare 縮放時做了反預乘), 標記它們讓 addToCache 將 RGB 夾到 <= alpha
+                    // 部分影像服務縮放預乘 alpha 圖時會讓透明區域 RGB 變白
+                    // 標記它們讓 addToCache 將 RGB 夾到 <= alpha
                     // 否則白色會滲入輪廓邊緣形成白邊
-                    image._geFixAlpha = usedCdn;
+                    image._geFixAlpha = usedResize && memGuard.fixPremultipliedAlphaAfterResize !== false;
 
                     if (!loader.keyExists(image))
                     {
@@ -264,7 +265,9 @@ var SpineFile = new Class({
      * 回傳 spine 記憶體防護設定, 若停用則回傳 null
      * 設定來源為 window.__GE_RENDER_SPINE_MEMORY_GUARD__
      *
-     * @returns {?object} { enabled, maxTextureSize }
+     * imageURLProcessor(url, width, quality) 應回傳最終影像 URL
+     *
+     * @returns {?object} { enabled, maxTextureSize, imageURLProcessor }
      */
     _getSpineMemoryGuardConfig: function ()
     {
@@ -300,8 +303,8 @@ var SpineFile = new Class({
     },
 
     /**
-     * 將 HTMLImageElement 縮小到 maxSize 以內, 作為 CDN 縮放的安全網 (必要)
-     * CDN 縮放偶爾會漏掉某些頁面而回傳原尺寸影像, 這時用它縮小避免整張大圖上傳 GPU
+     * 將 HTMLImageElement 縮小到 maxSize 以內, 作為伺服器端縮放的安全網 (必要)
+     * 伺服器端縮放偶爾會回傳原尺寸影像, 這時用它縮小避免整張大圖上傳 GPU
      * 回傳 { image: Canvas|HTMLImageElement, scale: number }
      *
      * @param {HTMLImageElement} image - 來源影像
@@ -358,7 +361,7 @@ var SpineFile = new Class({
      * 修正縮放後 spine 頁面的預乘 alpha 白邊
      *
      * 來源圖集是預乘 alpha (RGB <= alpha, 透明處為黑)
-     * Cloudflare 影像縮放 (以及一般的 canvas drawImage) 會以直通 alpha 縮放
+     * 影像服務 (以及一般的 canvas drawImage) 可能會以直通 alpha 縮放
      * 使透明像素帶有白色 RGB, 少數邊緣像素 RGB > alpha
      * 以預乘混色上傳後, 白色會滲入輪廓邊緣成為淡淡的白邊
      * 將每個通道夾到 <= alpha, 對已經預乘的多數像素沒有影響
@@ -619,11 +622,11 @@ var SpineFile = new Class({
                     {
                         var imageSource = file.data;
 
-                        // 經 CDN 縮放 (或下方 canvas 安全網縮小) 的頁面, 透明像素帶有白色 RGB
+                        // 經伺服器端縮放 (或下方 canvas 安全網縮小) 的頁面, 透明像素可能帶有白色 RGB
                         // 將 RGB 夾到 <= alpha 以消除白邊
                         var needsFix = !!file._geFixAlpha;
 
-                        // canvas 安全網 (必要): CDN 縮放偶爾會漏掉某些頁面, 讓它以原尺寸下載
+                        // canvas 安全網 (必要): 伺服器端縮放偶爾會回傳原尺寸頁面
                         // 這時必須把它縮到 maxTextureSize 再上傳, 否則整張大圖上 GPU 會讓 iOS 閃退
                         if (memGuard && maxTextureSize > 0)
                         {
@@ -631,7 +634,7 @@ var SpineFile = new Class({
                             var ih0 = imageSource.naturalHeight || imageSource.height || 0;
                             if (iw0 > maxTextureSize || ih0 > maxTextureSize)
                             {
-                                // 一律記錄 (即使 debug 關閉), 代表 CDN 縮放漏掉了這一頁
+                                // 一律記錄 (即使 debug 關閉), 代表伺服器端縮放回傳了原尺寸頁面
                                 SpineFile.prototype._spineGuardLog('FALLBACK ' + key + ' ' + iw0 + 'x' + ih0);
                                 var downscaled = SpineFile.prototype._downscaleSpineImage(imageSource, maxTextureSize);
                                 imageSource = downscaled.image;
@@ -639,7 +642,7 @@ var SpineFile = new Class({
                             }
                         }
 
-                        if (needsFix && imageSource)
+                        if (preMultipliedAlpha && needsFix && imageSource)
                         {
                             imageSource = SpineFile.prototype._fixSpinePremultipliedAlpha(imageSource);
                         }
