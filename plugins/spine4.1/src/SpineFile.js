@@ -175,17 +175,25 @@ var SpineFile = new Class({
                 // 手機記憶體防護: 由使用者提供的 URL 處理器縮放過大的 spine 頁面
                 var memGuard = SpineFile.prototype._getSpineMemoryGuardConfig();
                 var imageURLProcessor = memGuard && memGuard.imageURLProcessor;
-                var serverResize = !!(memGuard && memGuard.cdnResize && typeof imageURLProcessor === 'function');
-                var guardMax = memGuard ? (memGuard.maxTextureSize || 1024) : 0;
+                var resizeQuality = Number(memGuard && memGuard.cdnResizeQuality);
+                var serverResize = !!(
+                    memGuard &&
+                    memGuard.cdnResize &&
+                    typeof imageURLProcessor === 'function' &&
+                    isFinite(resizeQuality) &&
+                    resizeQuality > 0
+                );
+                var minimumTarget = Number(memGuard && memGuard.minTextureTargetSize);
                 var pageSizes = memGuard
                     ? SpineFile.prototype._parseSpineAtlasPageSizes(file.data)
                     : {};
                 var displayScale = Number(GetFastValue(config, 'spineDisplayScale', 0)) || 0;
                 var guardTarget = memGuard && typeof memGuard.getTextureTargetSize === 'function'
                     ? memGuard.getTextureTargetSize(pageSizes, displayScale)
-                    : guardMax;
-                guardTarget = memGuard
-                    ? Math.max(1, Math.round(guardTarget || guardMax))
+                    : minimumTarget;
+                guardTarget = Number(guardTarget);
+                guardTarget = memGuard && isFinite(guardTarget) && guardTarget > 0
+                    ? Math.max(1, Math.round(guardTarget))
                     : 0;
 
                 for (var i = 0; i < textures.length; i++)
@@ -221,8 +229,7 @@ var SpineFile = new Class({
                             var absURL = /^https?:\/\//.test(path)
                                 ? path + loadURL
                                 : (baseURL || '') + (path || '') + loadURL;
-                            var q = memGuard.cdnResizeQuality || 100;
-                            var processedURL = imageURLProcessor(absURL, reqW, q, processorContext);
+                            var processedURL = imageURLProcessor(absURL, reqW, resizeQuality, processorContext);
                             if (typeof processedURL === 'string' && processedURL)
                             {
                                 loadURL = processedURL;
@@ -258,12 +265,12 @@ var SpineFile = new Class({
      *
      * imageURLProcessor(url, width, quality, context) 應回傳最終影像 URL
      *
-     * @returns {?object} { enabled, maxTextureSize, imageURLProcessor }
+     * @returns {?object} { enabled, minTextureTargetSize, imageURLProcessor }
      */
     _getSpineMemoryGuardConfig: function ()
     {
         var config = window.__GE_RENDER_SPINE_MEMORY_GUARD__;
-        if (!config || !config.enabled)
+        if (!config || config.enabled !== true)
         {
             return null;
         }
