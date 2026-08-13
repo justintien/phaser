@@ -12512,6 +12512,9 @@ uniform sampler2D u_texture;
 
 void main () {
 	vec4 texColor = texture2D(u_texture, v_texCoords);
+	float maxRGB = max(texColor.r, max(texColor.g, texColor.b));
+	if (v_dark.a > 0.5 && maxRGB > texColor.a)
+		texColor.rgb *= texColor.a / maxRGB;
 	gl_FragColor.a = texColor.a * v_light.a;
 	gl_FragColor.rgb = ((texColor.a - 1.0) * v_dark.a + 1.0 - texColor.rgb) * v_dark.rgb + texColor.rgb * v_light.rgb;
 }
